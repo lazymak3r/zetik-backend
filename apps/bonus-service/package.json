@@ -1,0 +1,29 @@
+{
+  "name": "@zetik/bonus-service",
+  "version": "1.0.0",
+  "description": "Bonus scheduler service (cron jobs only)",
+  "private": true,
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "nest build bonus-service",
+    "start": "nest start bonus-service",
+    "start:dev": "nest start bonus-service --watch",
+    "start:debug": "nest start bonus-service --debug --watch",
+    "start:prod": "node dist/bonus-service/src/main.js"
+  },
+  "dependencies": {
+    "@nestjs/bullmq": "^11.0.2",
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.0.1",
+    "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/schedule": "^6.0.0",
+    "@types/ioredis": "^4.28.10",
+    "bullmq": "^5.53.1",
+    "dotenv": "^16.6.0",
+    "ioredis": "^5.6.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {}
+}

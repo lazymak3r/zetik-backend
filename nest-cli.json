@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "monorepo": true,
+  "projects": {
+    "admin-panel": {
+      "type": "application",
+      "root": "apps/admin-panel",
+      "entryFile": "main",
+      "sourceRoot": "apps/admin-panel/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/admin-panel/tsconfig.app.json",
+        "webpackConfigPath": "apps/admin-panel/webpack.config.js"
+      }
+    },
+    "backend": {
+      "type": "application",
+      "root": "apps/backend",
+      "entryFile": "main",
+      "sourceRoot": "apps/backend/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/backend/tsconfig.app.json"
+      }
+    },
+    "bonus-service": {
+      "type": "application",
+      "root": "apps/bonus-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/bonus-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/bonus-service/tsconfig.app.json"
+      }
+    },
+    "crash-service": {
+      "type": "application",
+      "root": "apps/crash-service",
+      "entryFile": "crash-service/src/main",
+      "sourceRoot": "apps/crash-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/crash-service/tsconfig.app.json"
+      }
+    },
+    "currency-rate-service": {
+      "type": "application",
+      "root": "apps/currency-rate-service",
+      "entryFile": "currency-rate-service/src/main",
+      "sourceRoot": "apps/currency-rate-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/currency-rate-service/tsconfig.app.json"
+      }
+    },
+    "fireblocks-service": {
+      "type": "application",
+      "root": "apps/fireblocks-service",
+      "entryFile": "fireblocks-service/src/main",
+      "sourceRoot": "apps/fireblocks-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/fireblocks-service/tsconfig.app.json"
+      }
+    },
+    "bet-feed-service": {
+      "type": "application",
+      "root": "apps/bet-feed-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/bet-feed-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/bet-feed-service/tsconfig.app.json"
+      }
+    },
+    "race-service": {
+      "type": "application",
+      "root": "apps/race-service",
+      "entryFile": "race-service/src/main",
+      "sourceRoot": "apps/race-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/race-service/tsconfig.app.json"
+      }
+    }
+  }
+}

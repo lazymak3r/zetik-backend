@@ -1,0 +1,509 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: zetik_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: zetik_casino
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ../docker-postgres.sql:/docker-entrypoint-initdb.d/docker-postgres.sql
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    networks:
+      - zetik-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d zetik_casino']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    command: ['postgres', '-c', 'shared_buffers=128MB', '-c', 'max_connections=100']
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: zetik_redis
+    restart: unless-stopped
+    ports:
+      - '26379:6379'
+    networks:
+      - zetik-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redis-data:/data
+
+  api:
+    build:
+      context: ..
+      dockerfile: apps/backend/Dockerfile
+    container_name: zetik_api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - ../apps/backend/.env
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000,http://localhost:3002,https://pubgclash.com,https://api.pubgclash.com}
+      - DB_HOST=zetik_postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=zetik_casino
+      - DB_USERS_SCHEMA=users
+      - DB_PAYMENTS_SCHEMA=payments
+      - DB_BALANCE_SCHEMA=balance
+      - DB_ADMIN_SCHEMA=admin
+      - DB_BONUS_SCHEMA=bonus
+      - DB_BLOG_SCHEMA=blog
+      - DB_GAMES_SCHEMA=games
+      - DB_CHAT_SCHEMA=chat
+      - REDIS_HOST=zetik_redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - ACTIVE_ASSETS=BTC,LTC,DOGE,ETH
+      - JWT_SECRET=your-secret-key
+      - JWT_ACCESS_EXPIRATION=5d
+      - JWT_REFRESH_SECRET=your-refresh-secret-key
+      - JWT_REFRESH_EXPIRATION=30d
+      - ADMIN_JWT_SECRET=your-secret-key
+      - ADMIN_JWT_REFRESH_SECRET=your-secret-key
+      - ADMIN_JWT_ACCESS_EXPIRATION=5d
+      - ADMIN_JWT_REFRESH_EXPIRATION=30d
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-your-telegram-bot-token}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-your-google-client-id}
+      - STEAM_API_KEY=${STEAM_API_KEY:-your-steam-api-key}
+      - STEAM_REALM=${STEAM_REALM:-your-steam-realm}
+      - FIREBLOCKS_API_KEY=${FIREBLOCKS_API_KEY:-4fed491b-f79e-41da-be74-6a26bb7d9edb}
+      - FIREBLOCKS_API_SECRET=${FIREBLOCKS_API_SECRET:-LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUpRZ0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQ1N3d2dna29BZ0VBQW9JQ0FRREc4ejNZbnBldWptRDUKNVhQSmh0NHRDS1YzSDR0eVJtbXJVSlBqdjcwdkYvRzNXZDZqc0hFc0lodmd0bVVxb1ZHZ0dEMXdxMWd4VHlBMgpkbTV1Y2hUYWNiQm13YjBuNi8zRDdBemowekpYa1BBZHVFb3pFd21zRXkwWmRmVnJFR1Z2ejcxZE5ZdE9SZ29PCkk1Sk8wcTlUVnN1Q3dOVWZNZ09CaXFGVGN4b2Z0L05hN3Njb0t3Y25XRWFXNFlWNFBkY0FMdFRIUy9URmNZbFAKODJBMWtzK0kxQTJlSmVFRUJqRjZXeDFhcUU2bnRFR216R01JVmdVM0ovVnhaK25yOHUrRzBJMkhoa3lQa3F6ZgpXRWlkL0d0ZTl3eGE1ZXEySjhlYlY3WTRLRVRGdnBtbHlwblYvbWl2RzZoUUpXQjlCYTRNYWs0bFFsOTN3UUxGCkJEQVBRbUh0bXkyWW5vQkJRWFdpYThMd21ONHhhTGVLd3ZXZE5ZT3JUdmdxempiOUkwYmpZeDdIWkVoSEZZeEYKdWROMzVWYVRxMnJoeFlYMWlBRVJCZ3ZMbTlTVVcwS2JGSTlobFlXcFAzSGltVFBxRDczTG9DWnB5OW9TTDNtQwowdnU2SGNtTERGeVcyN1gyOWVCMFA2dnZnZE16NERxWVVUeDBCbldZclRVYUNVSmgxYkNrbmlmR2VubWNsdUN1Cis1QUxoQVovMlQ2YmIrM1hONVRxcC9jYTZuR0wvWFdRWVJzak5zcXBEcGVKUzg0MzdreDNmZ1hnMnBvd0EvaWEKb3VadDhScUgwd1ErdXcvMXUwc3ZuRWNYcFRzb2hvNUFPTVdsN2lUaHhVcHo0cmpXaWY2Ly9YaFJsQ3llRmdQcQpqNWFlT2F1dk8wUEFsanFYeXptcWQ5SzNzTTM2c3dJREFRQUJBb0lDQUFQSVVCNjBOVElPWnUyWlhUQXhyanV3CjlHUmxaeU5QRDJkQWF1OWpqOWM3WDA4YkdFNklaajV1ajVVZ0lxQkMzT2hzVFk2ODB6cHN4TElFWW1rYkppWloKRHYrRkkzR0UzUmhDZnFRK09iRE1ncVF1QXNzaHk0ZEgvZzJEM3B5Z2ZTMDVCK0tqeC9nL0FLWHdLekh3YzREawpINDVtMkNaMXJ2ZGhpVnVxem81WDB2cWhtNHU1OWJMYnpNdkZrZUlOV3U4WDlOZXRMQVFzK20xWXRUV1BpdjZRCitZbE9NdzcraHlaS1lTNStFTEREanBQN1FzNi93KzJlaHQ0WEdhMXd1dmtYTWZtbnBnRDh5dWljSnhWSjNVaTYKN2JNMHQ5ZXF2ZkxJSWlERE16dUhPaWlheDMzNERrbDEveWMyN3JTeHpQTlRlaFRmUkMxa3NBYks0NWNHcmhIcgp6R1U0V3A2amMvMXd6YjVlNHNPY0w2Y2J1WEV4UjhOYVkwWGF0L2VzeGFjTlNIMUJJeDlGNHRhck1UUEVCOEZ5CkpTcXZnZU1VZzZ2cU1qVHpJa0Npcms1blRzZkJSTXRPSXNqT3B6VjErUUhLOGQzbWVXYTcwN1ZEbXRPRDloM3IKeVJuVGZIRFh2YTFvS3Zqak5EaHlWZ013RDEvQ0Qvb3VJRjdacW9GMXVST29jY3RXSjMwVFZSNFRDd1NHQk5XZApsRGdhdlNmRG5nS216WG1xNUgxRU1CMndEWjdjV3dHeU1lb1FRRXdYQlhEQzdGQUNiNjBZNVNLTExEQ0lUbnZtCmNacXcrb2hFd1lEc2F5TVNwZk13SHRnRGFMejNHbHBUd1hNMStWVnhrNXhRaVM2bmF6UElxbisrTHR6Y3pIc0sKcklkcFFnZlBieUJkazBYVUo3UVJBb0lCQVFEektLRTl3MHdSdUdCWGl3VnZHaU00SGZpWVJsdjhtVTlDYkpkdwovcE83Vk1IUDlleFE4NWs1T0J1bkh5Z1JlZlo2TDBVSXVmVnQ3WW4za0lBbW4zZ1VyQXhzeUV6eFdua1h2M2tpClJkOHo5K0FLS2w5NDNSMXJkeVR3ODNZZjFFV1JmekQyekFHTDZTVndJdnVoSi9OQ2NiZmVxOFVLbkltY2xBazUKUzlGNGJuSGhidCs5aTFISEhveUY3ZklLTWZoUW9CeUVXcEN1QXhmYkZkbENsS1NSNzA3ZFZIcXYxZ0dzYkU0ZwpLSmtHakdYMGlNL1dWVW5XS3g5d2ZGcEpKK3V4RENIYmRrY3dmRlJGNDZjRVlHNjFOcDBBbU85ei9land3Y1dPCjU3TUdtSG41WTQyWUt6NnJzamxHdWVQTEcyaHZUendnM01xUHJ1NktINzlRWlVKbkFvSUJBUURSZE8vVDA4UGMKbXZmemcwa2lJdC80M2UyRWo5WThhdGlHZFZZanVwZEd6TVlvMDYrWVk4eDQzVXZEQTJ2dGI5UkdlWDFlbEdmNwpHbXpKQXhKNTVEVW1WK0FZaVRtZEVnRWVvMnplRVBKZkszYmxYRzZFY1A4eWRHQjlWdTVjSWhYVmQ1SW5CRENNCllFUW9vQ2h3UXZPcE1pczRHWTQ1ODA2OFIwa1pwalJGdWViUStEb3FFSTV4bm9IQ1AvcmE4Q0xHU2xMQlp6Uk0KWTc3b3k4clRZejJTc0RIZGYySGF6ei8vTitxWTRFKzlISkdxOW9GMEdrS0VkVC8yUlNld1hqb2s4b21sYVBBRwpJUnNMbHVpbzNOQm5VZHQyZXJXd0gwZ2RUOGF3a21OdDBMa0t3bGFPdTBVazBQMzhUcjl1c3RPQTJJN0dibTRDCnBLbTBQczNDVFkzVkFvSUJBUUNXZUI4SFpGSXZhUVFkU0VjdGtHUVk5dHIrQ0JRbVJReTZFdzdIK3BHYXpBRS8KV25SSlIrVWFkbkVPUXdaOWdoYVhWNmNGbG1XZEIvQm5oVUQ0SlppZVdqVTZIOTBWUWFKTG9zNG4ra3I4RXJqTwpNWmh3NTR1c0U4ZUZYM05La1FZWDJqaUhrSWlvZHJjWEpGN0lSRHVSYzJPUDVJV0RZb2o1bnRYeVljdVhGZWxjCjBrcWNOWmwrZVpZRnp0QUhwUkovZWdVTGxpdVBzeFJSRzcwZEtYU0paaWhNYUZtZmMvUUhLZUpTbml6TDA1ZkgKOGQyRFNiWHVWVE1ZWGF0Vk4rSHU1bzRSQzZsVUJLdjFyOEdMd016aFVKRnBiRHBKY2VkekRNWGUvOXhXQ1liNQpYN1NnWktwY2YyWllNUElZbnJaS295S1hSMm9GN2Y5bzgrcGtxclNqQW9JQkFHMTdnaUJuQUdtL1Z2dWlGQWdUCjBwNXk0a1A0S3pOSlpnUmlNTFJjUTladUV1WWtRQlNYbGJsWGN0SnNaMjJrbG9CLzRGZ2ZtbnBXUmFhTVJJd1MKRFBZTjJNVDZkWEwwaGtGTml3cElNV2d0ZitoRGVFRWlEMEtBTWk5UjBTVzNhMUk1UGR2SEJObGJPRVZEOGQ4OApIOERBeUhaNlpTMUZVRko1c0d3SHhDcnVFUWdKdDkxazZnL1ptbG0rdDVEWkZGUXhaVEJTa2JPY0w1M2ZhQlUyCk9ta0NVQTVIRnc4WVpZc3gzeDRwb1lSbitud3lmVmdDb2VJNnAwUkN3WXdldEtXN1lOZGxFcEVobk5GaUFCckQKME9zd2psWlByY2h4a1hCQTBzcFl1a0FjYVp5R0dGaGk2ckZqekY2bGlzcUNEcXU2aG1hU01rNlBZMlVqcnNseApZRUVDZ2dFQVRPTVNiZUdnTUdLUmNzcnVZTjh1T05iY2MyRHY0aGluOVdQcWd0ZjI3ZW9UOXVHcC9hSndjTWZvCjI2RzVJZ254VTcwOWtQUWdPdWpOZlpvcVpxVWU3TFhVMnhTcVdYRTRmODJ1K2tGWG1zeWVtZDNFVk85SnVZcWcKalFUenpVL3ZLdXBNQ2RranNCTGhsd3VKMlFSQWN3Nko3YWljQ1Y0ZlBjL3I0TUljc0NXSy9FUHNOdGF4YXZUWApNeVhvN1VKVUMrRHM1aE5xNFlaazJKa0oxTjdoWG96QUc3YkJLZGZudktNdmhLRGNzVUJSNndLQ1UzMWY3bFNZCnNGdEhQRTU1YUxRbks5VjlzZnZUV1FQVERSUXJQRFgwZG1vbEhVVGI4L0Z5L09DUEUrcVFHVXRCczB2MVpRUUsKR1B4dCttaDYzWUxGT05MbkVUN3g5L2Y3bmY5K2pnPT0KLS0tLS1FTkQgUFJJVkFURSBLRVktLS0tLQ==}
+      - FIREBLOCKS_API_URL=${FIREBLOCKS_API_URL:-https://sandbox-api.fireblocks.io}
+      - FIREBLOCKS_VAULT_ACCOUNT_ID=${FIREBLOCKS_VAULT_ACCOUNT_ID:-0}
+      - ST8_API_URL=https://dgn001.o.p8d.xyz
+      - ST8_API_PUBLIC_KEY=LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFQVpsaEwzOVpuM1pxNHBlOHZNVTREeW5ISDk3cgpMNzJzN2xDM0J4WVZmM3Viek51WTJLMUx5NEl0WFR1SkJWSVVidHozU2dBM1UyTHFZUTVZWWRhbzJnPT0KLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0t
+      - ST8_LOCAL_PRIVATE_KEY=LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUR6RE5QeUNnMy9vYm9IdlRvNmJRZVdvZy9KS3ZtQ2pDUHJBdFNJSkhoTGRvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFa0lRb1B2amlFR0pWamY0ZEphUFVobW1aRkxSdmc0UUQyMWI3WE43QXZ4eWpIbFpPbEM2TQpwdklsaDM2Yzh6UUpWeFVZUzkvSGduUVhzRlgrYzJNUFZBPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
+      - ST8_OPERATOR_CODE=dgn001
+      - ST8_OPERATOR_SITE=https://pubgclash.com
+      - ST8_OPERATOR_SITE_DEPOSIT_URL=https://pubgclash.com/deposit
+      - ST8_OPERATOR_SITE_CODE=zetik
+      - ST8_OPERATOR_SITE=zetik
+      - ST8_ASSETS_HOST=https://luckmedia.link
+      - ST8_ASIAN_API_URL=https://dgn001.o.p8d.xyz
+      - ST8_ASIAN_API_PUBLIC_KEY=LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFQVpsaEwzOVpuM1pxNHBlOHZNVTREeW5ISDk3cgpMNzJzN2xDM0J4WVpmM3Viek51WTJLMUx5NEl0WFR1SkJWSVVidHozU2dBM1UyTHFZUTVZWWRhbzJnPT0KLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0t
+      - ST8_ASIAN_LOCAL_PRIVATE_KEY=LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUR6RE5QeUNnMy9vYm9IdlRvNmJRZVdvZy9KS3ZtQ2pDUHJBdFNJSkhoTGRvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFa0lRb1B2amlFR0pWamY0ZEphUFVobW1aRkxSdmc0UUQyMWI3WE43QXZ4eWpIbFpPbEM2TQpwdklsaDM2Yzh6UUpWeFVZUzkvSGduUVhzRlgrYzJNUFZBPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
+      - ST8_ASIAN_OPERATOR_CODE=dgn001
+      - ST8_ASIAN_OPERATOR_SITE=https://pubgclash.com
+      - ST8_ASIAN_OPERATOR_SITE_DEPOSIT_URL=https://pubgclash.com/deposit
+      - ST8_ASIAN_OPERATOR_SITE_CODE=zetik
+      - ST8_ASIAN_OPERATOR_SITE=zetik
+      - ST8_ASIAN_ASSETS_HOST=https://luckmedia.link
+      # Mail verification and password reset
+      - MAILGUN_API_KEY=your-mailgun-api-key
+      - MAILGUN_DOMAIN=your-mailgun-domain.com
+      - MAILGUN_FROM=no-reply@your-mailgun-domain.com
+      - EMAIL_VERIFICATION_EXPIRATION=86400
+      - PASSWORD_RESET_EXPIRATION=900
+      - INTERCOM_ACCESS_TOKEN
+      - INTERCOM_WEB_SECRET
+      - GAME_CRASH_BETTING_TIME=5000
+      - MINIO_ENDPOINT
+      - MINIO_PORT
+      - MINIO_ACCESS_KEY
+      - MINIO_SECRET_KEY
+      - MINIO_USE_SSL
+      - MINIO_BUCKET
+      - PUBLIC_STORAGE_BASE_URL
+      - ADMIN_API_SECRET
+      - ADMIN_ALLOWED_IPS
+      - EXCHANGE_RATE_URL
+      - EXCHANGE_RATE_RELOAD_HOURS
+      # Betby
+      - BETBY_PUBLIC_KEY=LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQ0lqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FnOEFNSUlDQ2dLQ0FnRUFwQkVXY0xrek0yMSs4R3lWTE1xdQowaFd0bkoya2JOdi83SUtJbHdzZ1YvWnlrM0JlbnZGUHkzR0tYWlAxczFzakRJWE0zZzlTMWkwUEdRbU9icG1XCjJveEgrUFdJSjlyL0RpK1lPNXZjQWFSUXZWdSs3NnBBM0VvMURoa1dQRUk1VDdvemxZL1lUdGhELzU3OEQ4OFEKZ0xKT3pNMWZPQjhJbmlkRTdWZUFMemN3U2JYcWFubmR0RFlZc25vVXgzcFJTSGFMQ0h3QVMxWHlrc2NjVm9jaApoWHNmanpYL3loZzhrMExsazR1R01vbzdNNmlKNHd1SkdyVEhyZ0ZyckQ4SzZjUXZ4RHNsNHpCR1hBc1VUbE9rCnEwY1lWamcyRlltRFZCR2VEL2kyclAwUjM0Q0pLaElrdDd2NXRPTW1hRllNeWk5WmhpZ082YnJVemkzdnRpMGkKclhTUCtCemY3ZVhEakZORHV5RUFJdjJ0YzByVmttcTgrc1djVmlBWVh6LzZpVFhqcjJqZURWdDNVTTJ2Rk9qbQpnL2JaRXAvRXdXeGFzMnJuSEd5NXVIelZmcTJIL0hQcldtaUpYWXFYckoxWGNZWkZaN1k0cXhVSDdPeTN4OFRhCkFrVGdHVEpubnpuTnVETEduamM0cFU5aVNSQm5XK0RjYUlVYm9oNWlBeXlkUTBCeGV3UjIxTTNaZ1RUOU1kbWoKMjY2TkhXSERDYlJaL0hla3hsMjczRTdmcEtCR29UUFNOTC9mOUVsTXBHbjkxVEEwWW9WMjhnYlBSclEydXU5MQpHRTFKM1V4T3NkVitoN3AzWW1TOFNaRnZMYVFNdFo1UHUrZjFKTTBZeHZJWkZyb1kvQzFoRmhub1RkbUsxRFFaCkJzYi9vOEtVaGNyQmFIcnY5WCs1SWlNQ0F3RUFBUT09Ci0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLQ==
+      - BETBY_OPERATOR_ID=2564595874810437633
+      - BETBY_BRAND_ID=2564595874810437634
+      - BETBY_EXTERNAL_API_URL=https://external-api.invisiblesport.com/api/v1/external_api/
+      - BETBY_THEME_NAME=default-table
+      - BETBY_LOCAL_PRIVATE_KEY=LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUVlb2crM3NuNFZiWE1WY0g2Y1RqZ2tWWTc2dTVxbDVzSi9lYWtBSVhJb2RvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFRWJ5R04vRHk2TjZzUGY5MHJPRWZ1elpSUjBIRGltZ0FDdEYrd25NYlpOMTJZQURTYytBawptbVpKLyt0bnhySzBtenNhYWdTZm1UVXdmWUdXeXBUMGZnPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQ==
+    ports:
+      - '3100:3000'
+    volumes:
+      - /app/node_modules
+    networks:
+      - zetik-network
+    healthcheck:
+      test:
+        ['CMD', 'wget', '--no-verbose', '--tries=5', '--spider', 'http://localhost:3000/v1/health']
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 180s
+
+  admin-panel:
+    build:
+      context: ..
+      dockerfile: apps/admin-panel/Dockerfile
+      args:
+        - REACT_APP_API_URL=${REACT_APP_API_URL:-https://admin.pubgclash.com/v1}
+    container_name: zetik_admin_panel
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=development
+      - ADMIN_PORT=3001
+      - ADMIN_CORS_ORIGINS=http://localhost:3001,http://localhost:3000
+      - DB_HOST=zetik_postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=zetik_casino
+      - DB_ADMIN_SCHEMA=admin
+      - DB_USERS_SCHEMA=users
+      - DB_PAYMENTS_SCHEMA=payments
+      - DB_BALANCE_SCHEMA=balance
+      - DB_BONUS_SCHEMA=bonus
+      - DB_BLOG_SCHEMA=blog
+      - DB_GAMES_SCHEMA=games
+      - DB_CHAT_SCHEMA=chat
+      - REDIS_HOST=zetik_redis
+      - REDIS_PORT=6379
+      - ADMIN_JWT_SECRET=your-secret-key
+      - ADMIN_JWT_REFRESH_SECRET=your-secret-key
+      - ADMIN_JWT_ACCESS_EXPIRATION=5d
+      - ADMIN_JWT_REFRESH_EXPIRATION=30d
+      - ADMIN_SESSION_SECRET=your-admin-session-secret
+      - ADMIN_SESSION_EXPIRATION=3600
+      - DEFAULT_ADMIN_EMAIL=admin@zetik.casino
+      - DEFAULT_ADMIN_PASSWORD=changeme123
+      - DEFAULT_ADMIN_NAME=Administrator
+      - ADMIN_BCRYPT_ROUNDS=12
+      - ADMIN_LOGIN_LOCKOUT_DURATION=900
+      - ADMIN_MAX_LOGIN_ATTEMPTS=5
+      - ADMIN_RATE_LIMIT_TTL=60
+      - ADMIN_RATE_LIMIT_LIMIT=100
+      - MINIO_ENDPOINT
+      - MINIO_PORT
+      - MINIO_ACCESS_KEY
+      - MINIO_SECRET_KEY
+      - MINIO_USE_SSL
+      - MINIO_BUCKET
+      - PUBLIC_STORAGE_BASE_URL
+      - BACKEND_URL
+      - ADMIN_API_SECRET
+    ports:
+      - '3101:3001'
+    networks:
+      - zetik-network
+
+  crash-service:
+    build:
+      context: ..
+      dockerfile: apps/crash-service/Dockerfile
+    container_name: zetik_crash_service_dev
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    env_file:
+      - ../apps/backend/.env
+    environment:
+      - NODE_ENV=development
+      - CRASH_SERVICE_PORT=4001
+      - DB_HOST=zetik_postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=zetik_casino
+      - DB_USERS_SCHEMA=users
+      - DB_PAYMENTS_SCHEMA=payments
+      - DB_BALANCE_SCHEMA=balance
+      - DB_ADMIN_SCHEMA=admin
+      - DB_BONUS_SCHEMA=bonus
+      - DB_BLOG_SCHEMA=blog
+      - DB_GAMES_SCHEMA=games
+      - DB_CHAT_SCHEMA=chat
+      - REDIS_HOST=zetik_redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - ENABLE_CRASH_GAME_LOOP=true
+      - GAME_CRASH_BETTING_TIME=5000
+    ports:
+      - '4101:4001'
+    networks:
+      - zetik-network
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:4001/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  fireblocks-service:
+    build:
+      context: ..
+      dockerfile: apps/fireblocks-service/Dockerfile
+    container_name: zetik_fireblocks_service_dev
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - ../apps/backend/.env
+    environment:
+      - NODE_ENV=development
+      - FIREBLOCKS_SERVICE_PORT=4002
+      - DB_HOST=zetik_postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=zetik_casino
+      - DB_USERS_SCHEMA=users
+      - DB_PAYMENTS_SCHEMA=payments
+      - DB_BALANCE_SCHEMA=balance
+      - DB_ADMIN_SCHEMA=admin
+      - DB_BONUS_SCHEMA=bonus
+      - DB_BLOG_SCHEMA=blog
+      - DB_GAMES_SCHEMA=games
+      - DB_CHAT_SCHEMA=chat
+      - REDIS_HOST=zetik_redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - FIREBLOCKS_API_KEY=${FIREBLOCKS_API_KEY:-4fed491b-f79e-41da-be74-6a26bb7d9edb}
+      - FIREBLOCKS_API_SECRET=${FIREBLOCKS_API_SECRET:-LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUpRZ0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQ1N3d2dna29BZ0VBQW9JQ0FRREc4ejNZbnBldWptRDUKNVhQSmh0NHRDS1YzSDR0eVJtbXJVSlBqdjcwdkYvRzNXZDZqc0hFc0lodmd0bVVxb1ZHZ0dEMXdxMWd4VHlBMgpkbTV1Y2hUYWNiQm13YjBuNi8zRDdBemowekpYa1BBZHVFb3pFd21zRXkwWmRmVnJFR1Z2ejcxZE5ZdE9SZ29PCkk1Sk8wcTlUVnN1Q3dOVWZNZ09CaXFGVGN4b2Z0L05hN3Njb0t3Y25XRWFXNFlWNFBkY0FMdFRIUy9URmNZbFAKODJBMWtzK0kxQTJlSmVFRUJqRjZXeDFhcUU2bnRFR216R01JVmdVM0ovVnhaK25yOHUrRzBJMkhoa3lQa3F6ZgpXRWlkL0d0ZTl3eGE1ZXEySjhlYlY3WTRLRVRGdnBtbHlwblYvbWl2RzZoUUpXQjlCYTRNYWs0bFFsOTN3UUxGCkJEQVBRbUh0bXkyWW5vQkJRWFdpYThMd21ONHhhTGVLd3ZXZE5ZT3JUdmdxempiOUkwYmpZeDdIWkVoSEZZeEYKdWROMzVWYVRxMnJoeFlYMWlBRVJCZ3ZMbTlTVVcwS2JGSTlobFlXcFAzSGltVFBxRDczTG9DWnB5OW9TTDNtQwowdnU2SGNtTERGeVcyN1gyOWVCMFA2dnZnZE16NERxWVVUeDBCbldZclRVYUNVSmgxYkNrbmlmR2VubWNsdUN1Cis1QUxoQVovMlQ2YmIrM1hONVRxcC9jYTZuR0wvWFdRWVJzak5zcXBEcGVKUzg0MzdreDNmZ1hnMnBvd0EvaWEKb3VadDhScUgwd1ErdXcvMXUwc3ZuRWNYcFRzb2hvNUFPTVdsN2lUaHhVcHo0cmpXaWY2Ly9YaFJsQ3llRmdQcQpqNWFlT2F1dk8wUEFsanFYeXptcWQ5SzNzTTM2c3dJREFRQUJBb0lDQUFQSVVCNjBOVElPWnUyWlhUQXhyanV3CjlHUmxaeU5QRDJkQWF1OWpqOWM3WDA4YkdFNklaajV1ajVVZ0lxQkMzT2hzVFk2ODB6cHN4TElFWW1rYkppWloKRHYrRkkzR0UzUmhDZnFRK09iRE1ncVF1QXNzaHk0ZEgvZzJEM3B5Z2ZTMDVCK0tqeC9nL0FLWHdLekh3YzREawpINDVtMkNaMXJ2ZGhpVnVxem81WDB2cWhtNHU1OWJMYnpNdkZrZUlOV3U4WDlOZXRMQVFzK20xWXRUV1BpdjZRCitZbE9NdzcraHlaS1lTNStFTEREanBQN1FzNi93KzJlaHQ0WEdhMXd1dmtYTWZtbnBnRDh5dWljSnhWSjNVaTYKN2JNMHQ5ZXF2ZkxJSWlERE16dUhPaWlheDMzNERrbDEveWMyN3JTeHpQTlRlaFRmUkMxa3NBYks0NWNHcmhIcgp6R1U0V3A2amMvMXd6YjVlNHNPY0w2Y2J1WEV4UjhOYVkwWGF0L2VzeGFjTlNIMUJJeDlGNHRhck1UUEVCOEZ5CkpTcXZnZU1VZzZ2cU1qVHpJa0Npcms1blRzZkJSTXRPSXNqT3B6VjErUUhLOGQzbWVXYTcwN1ZEbXRPRDloM3IKeVJuVGZIRFh2YTFvS3Zqak5EaHlWZ013RDEvQ0Qvb3VJRjdacW9GMXVST29jY3RXSjMwVFZSNFRDd1NHQk5XZApsRGdhdlNmRG5nS216WG1xNUgxRU1CMndEWjdjV3dHeU1lb1FRRXdYQlhEQzdGQUNiNjBZNVNLTExEQ0lUbnZtCmNacXcrb2hFd1lEc2F5TVNwZk13SHRnRGFMejNHbHBUd1hNMStWVnhrNXhRaVM2bmF6UElxbisrTHR6Y3pIc0sKcklkcFFnZlBieUJkazBYVUo3UVJBb0lCQVFEektLRTl3MHdSdUdCWGl3VnZHaU00SGZpWVJsdjhtVTlDYkpkdwovcE83Vk1IUDlleFE4NWs1T0J1bkh5Z1JlZlo2TDBVSXVmVnQ3WW4za0lBbW4zZ1VyQXhzeUV6eFdua1h2M2tpClJkOHo5K0FLS2w5NDNSMXJkeVR3ODNZZjFFV1JmekQyekFHTDZTVndJdnVoSi9OQ2NiZmVxOFVLbkltY2xBazUKUzlGNGJuSGhidCs5aTFISEhveUY3ZklLTWZoUW9CeUVXcEN1QXhmYkZkbENsS1NSNzA3ZFZIcXYxZ0dzYkU0ZwpLSmtHakdYMGlNL1dWVW5XS3g5d2ZGcEpKK3V4RENIYmRrY3dmRlJGNDZjRVlHNjFOcDBBbU85ei9land3Y1dPCjU3TUdtSG41WTQyWUt6NnJzamxHdWVQTEcyaHZUendnM01xUHJ1NktINzlRWlVKbkFvSUJBUURSZE8vVDA4UGMKbXZmemcwa2lJdC80M2UyRWo5WThhdGlHZFZZanVwZEd6TVlvMDYrWVk4eDQzVXZEQTJ2dGI5UkdlWDFlbEdmNwpHbXpKQXhKNTVEVW1WK0FZaVRtZEVnRWVvMnplRVBKZkszYmxYRzZFY1A4eWRHQjlWdTVjSWhYVmQ1SW5CRENNCllFUW9vQ2h3UXZPcE1pczRHWTQ1ODA2OFIwa1pwalJGdWViUStEb3FFSTV4bm9IQ1AvcmE4Q0xHU2xMQlp6Uk0KWTc3b3k4clRZejJTc0RIZGYySGF6ei8vTitxWTRFKzlISkdxOW9GMEdrS0VkVC8yUlNld1hqb2s4b21sYVBBRwpJUnNMbHVpbzNOQm5VZHQyZXJXd0gwZ2RUOGF3a21OdDBMa0t3bGFPdTBVazBQMzhUcjl1c3RPQTJJN0dibTRDCnBLbTBQczNDVFkzVkFvSUJBUUNXZUI4SFpGSXZhUVFkU0VjdGtHUVk5dHIrQ0JRbVJReTZFdzdIK3BHYXpBRS8KV25SSlIrVWFkbkVPUXdaOWdoYVhWNmNGbG1XZEIvQm5oVUQ0SlppZVdqVTZIOTBWUWFKTG9zNG4ra3I4RXJqTwpNWmh3NTR1c0U4ZUZYM05La1FZWDJqaUhrSWlvZHJjWEpGN0lSRHVSYzJPUDVJV0RZb2o1bnRYeVljdVhGZWxjCjBrcWNOWmwrZVpZRnp0QUhwUkovZWdVTGxpdVBzeFJSRzcwZEtYU0paaWhNYUZtZmMvUUhLZUpTbml6TDA1ZkgKOGQyRFNiWHVWVE1ZWGF0Vk4rSHU1bzRSQzZsVUJLdjFyOEdMd016aFVKRnBiRHBKY2VkekRNWGUvOXhXQ1liNQpYN1NnWktwY2YyWllNUElZbnJaS295S1hSMm9GN2Y5bzgrcGtxclNqQW9JQkFHMTdnaUJuQUdtL1Z2dWlGQWdUCjBwNXk0a1A0S3pOSlpnUmlNTFJjUTladUV1WWtRQlNYbGJsWGN0SnNaMjJrbG9CLzRGZ2ZtbnBXUmFhTVJJd1MKRFBZTjJNVDZkWEwwaGtGTml3cElNV2d0ZitoRGVFRWlEMEtBTWk5UjBTVzNhMUk1UGR2SEJObGJPRVZEOGQ4OApIOERBeUhaNlpTMUZVRko1c0d3SHhDcnVFUWdKdDkxazZnL1ptbG0rdDVEWkZGUXhaVEJTa2JPY0w1M2ZhQlUyCk9ta0NVQTVIRnc4WVpZc3gzeDRwb1lSbitud3lmVmdDb2VJNnAwUkN3WXdldEtXN1lOZGxFcEVobk5GaUFCckQKME9zd2psWlByY2h4a1hCQTBzcFl1a0FjYVp5R0dGaGk2ckZqekY2bGlzcUNEcXU2aG1hU01rNlBZMlVqcnNseApZRUVDZ2dFQVRPTVNiZUdnTUdLUmNzcnVZTjh1T05iY2MyRHY0aGluOVdQcWd0ZjI3ZW9UOXVHcC9hSndjTWZvCjI2RzVJZ254VTcwOWtQUWdPdWpOZlpvcVpxVWU3TFhVMnhTcVdYRTRmODJ1K2tGWG1zeWVtZDNFVk85SnVZcWcKalFUenpVL3ZLdXBNQ2RranNCTGhsd3VKMlFSQWN3Nko3YWljQ1Y0ZlBjL3I0TUljc0NXSy9FUHNOdGF4YXZUWApNeVhvN1VKVUMrRHM1aE5xNFlaazJKa0oxTjdoWG96QUc3YkJLZGZudktNdmhLRGNzVUJSNndLQ1UzMWY3bFNZCnNGdEhQRTU1YUxRbks5VjlzZnZUV1FQVERSUXJQRFgwZG1vbEhVVGI4L0Z5L09DUEUrcVFHVXRCczB2MVpRUUsKR1B4dCttaDYzWUxGT05MbkVUN3g5L2Y3bmY5K2pnPT0KLS0tLS1FTkQgUFJJVkFURSBLRVktLS0tLQ==}
+      - FIREBLOCKS_API_URL=${FIREBLOCKS_API_URL:-https://sandbox-api.fireblocks.io}
+      - FIREBLOCKS_VAULT_ACCOUNT_ID=${FIREBLOCKS_VAULT_ACCOUNT_ID:-0}
+    ports:
+      - '4102:4002'
+    networks:
+      - zetik-network
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:4002/api']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  race-service:
+    build:
+      context: ..
+      dockerfile: apps/race-service/Dockerfile
+    container_name: zetik_race_service_dev
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    env_file:
+      - ../apps/backend/.env
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=zetik_postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=zetik_casino
+      - DB_USERS_SCHEMA=users
+      - DB_PAYMENTS_SCHEMA=payments
+      - DB_BALANCE_SCHEMA=balance
+      - DB_ADMIN_SCHEMA=admin
+      - DB_BONUS_SCHEMA=bonus
+      - DB_BLOG_SCHEMA=blog
+      - DB_GAMES_SCHEMA=games
+      - DB_CHAT_SCHEMA=chat
+      - REDIS_HOST=zetik_redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+    networks:
+      - zetik-network
+
+  currency-rate-service:
+    build:
+      context: ..
+      dockerfile: apps/currency-rate-service/Dockerfile
+    container_name: zetik_currency_rate_service_dev
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - ../apps/backend/.env
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=zetik_postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=zetik_casino
+      - DB_USERS_SCHEMA=users
+      - DB_PAYMENTS_SCHEMA=payments
+      - DB_BALANCE_SCHEMA=balance
+      - DB_ADMIN_SCHEMA=admin
+      - DB_BONUS_SCHEMA=bonus
+      - DB_BLOG_SCHEMA=blog
+      - DB_GAMES_SCHEMA=games
+      - DB_CHAT_SCHEMA=chat
+      - REDIS_HOST=zetik_redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+    networks:
+      - zetik-network
+
+  bonus-service:
+    build:
+      context: ..
+      dockerfile: apps/bonus-service/Dockerfile
+    container_name: zetik_bonus_service_dev
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    env_file:
+      - ../apps/backend/.env
+    environment:
+      - NODE_ENV=development
+      - BONUS_SERVICE_PORT=4003
+      - DB_HOST=zetik_postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=zetik_casino
+      - DB_USERS_SCHEMA=users
+      - DB_PAYMENTS_SCHEMA=payments
+      - DB_BALANCE_SCHEMA=balance
+      - DB_ADMIN_SCHEMA=admin
+      - DB_BONUS_SCHEMA=bonus
+      - DB_BLOG_SCHEMA=blog
+      - DB_GAMES_SCHEMA=games
+      - DB_CHAT_SCHEMA=chat
+      - REDIS_HOST=zetik_redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - JWT_SECRET=your-secret-key
+      - JWT_ACCESS_EXPIRATION=5d
+      - JWT_REFRESH_SECRET=your-refresh-secret-key
+      - JWT_REFRESH_EXPIRATION=30d
+      - INTERCOM_ACCESS_TOKEN
+      - INTERCOM_WEB_SECRET
+    ports:
+      - '4103:4003'
+    networks:
+      - zetik-network
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:4003/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  bet-feed-service:
+    build:
+      context: ..
+      dockerfile: apps/bet-feed-service/Dockerfile
+    container_name: zetik_bet_feed_service_dev
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    env_file:
+      - ../apps/backend/.env
+    environment:
+      - NODE_ENV=development
+      - BET_FEED_SERVICE_PORT=4004
+      - DB_HOST=zetik_postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=zetik_casino
+      - DB_USERS_SCHEMA=users
+      - DB_PAYMENTS_SCHEMA=payments
+      - DB_BALANCE_SCHEMA=balance
+      - DB_ADMIN_SCHEMA=admin
+      - DB_BONUS_SCHEMA=bonus
+      - DB_BLOG_SCHEMA=blog
+      - DB_GAMES_SCHEMA=games
+      - DB_CHAT_SCHEMA=chat
+      - REDIS_HOST=zetik_redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - JWT_SECRET=your-secret-key
+      - JWT_ACCESS_EXPIRATION=5d
+      - JWT_REFRESH_SECRET=your-refresh-secret-key
+      - JWT_REFRESH_EXPIRATION=30d
+    ports:
+      - '4104:4004'
+    networks:
+      - zetik-network
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:4004/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  metabase:
+    image: metabase/metabase:latest
+    container_name: zetik_metabase
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - MB_DB_TYPE=postgres
+      - MB_DB_DBNAME=zetik_casino
+      - MB_DB_PORT=5432
+      - MB_DB_USER=postgres
+      - MB_DB_PASS=postgres
+      - MB_DB_HOST=postgres
+    ports:
+      - '3105:3000'
+    volumes:
+      - metabase-data:/metabase-data
+    networks:
+      - zetik-network
+
+networks:
+  zetik-network:
+    name: 'zetik-network'
+    driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  metabase-data:
+    driver: local

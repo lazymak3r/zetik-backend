@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "outDir": "../../dist/apps/bonus-service"
+  },
+  "include": ["src/**/*"],
+  "exclude": [
+    "node_modules",
+    "test/**/*",
+    "dist/**/*",
+    "../backend/**/*",
+    "../**/*.spec.ts",
+    "**/*.spec.ts",
+    "**/__tests__/**/*",
+    "**/*.test.ts"
+  ]
+}

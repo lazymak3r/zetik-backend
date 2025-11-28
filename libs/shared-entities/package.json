@@ -1,0 +1,26 @@
+{
+  "name": "@zetik/shared-entities",
+  "version": "0.0.1",
+  "description": "Shared database entities and schemas for Zetik platform",
+  "types": "./dist/src/index.d.ts",
+  "main": "./dist/src/index.js",
+  "exports": {
+    ".": "./dist/src/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix"
+  },
+  "dependencies": {
+    "@zetik/common": "workspace:*",
+    "@nestjs/swagger": "^11.2.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "multicoin-address-validator": "^0.5.26",
+    "typeorm": "0.3.25"
+  },
+  "peerDependencies": {
+    "@zetik/common": "*"
+  }
+}

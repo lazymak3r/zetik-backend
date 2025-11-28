@@ -1,0 +1,24 @@
+{
+  "name": "@zetik/common",
+  "version": "0.0.1",
+  "description": "Common code for both backend and admin-panel",
+  "types": "./dist/src/index.d.ts",
+  "main": "./dist/src/index.js",
+  "exports": {
+    ".": "./dist/src/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:cov": "jest --coverage"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "bignumber.js": "^9.3.0",
+    "class-validator": "^0.14.2",
+    "jsrsasign": "^11.1.0"
+  }
+}

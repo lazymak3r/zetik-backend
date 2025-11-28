@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2FA Login Test - Zetik Casino</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 12px;
+            max-width: 1020px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 3px;
+            font-size: 20px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 0;
+            font-size: 11px;
+        }
+
+        .section {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+            margin-bottom: 8px;
+        }
+
+        .section h2 {
+            color: #667eea;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .form-group {
+            margin-bottom: 6px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 2px;
+            font-size: 12px;
+        }
+
+        input {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[readonly] {
+            background-color: #f0f0f0;
+        }
+
+        .password-wrapper {
+            position: relative;
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .password-wrapper input {
+            flex: 1;
+        }
+
+        .password-action-btn {
+            background: #667eea;
+            border: none;
+            cursor: pointer;
+            padding: 6px 10px;
+            color: white;
+            font-size: 12px;
+            border-radius: 4px;
+            width: auto;
+            margin: 0;
+            transition: background 0.3s;
+        }
+
+        .password-action-btn:hover {
+            background: #5568d3;
+        }
+
+        .password-action-btn:active {
+            transform: scale(0.95);
+        }
+
+        button {
+            width: 100%;
+            padding: 7px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 5px;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin-top: 5px;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .qr-code {
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .qr-code img {
+            max-width: 250px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            background: white;
+        }
+
+        .secret-code {
+            background: #fff;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-family: monospace;
+            font-size: 16px;
+            margin: 10px 0;
+            border: 2px dashed #667eea;
+            word-break: break-all;
+        }
+
+        .instructions {
+            background: #e3f2fd;
+            padding: 6px;
+            border-radius: 4px;
+            margin-bottom: 6px;
+            font-size: 11px;
+            color: #1976d2;
+            line-height: 1.4;
+        }
+        
+        .instructions ul, .instructions ol {
+            margin: 3px 0;
+            padding-left: 18px;
+        }
+        
+        .instructions li {
+            margin: 1px 0;
+        }
+
+        .instructions strong {
+            color: #856404;
+        }
+
+        .token-display {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .token-display pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+
+        .step-indicator {
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .hidden {
+            display: none;
+        }
+        
+        .step-indicator {
+            font-size: 12px;
+        }
+        
+        .qr-code-container {
+            padding: 6px;
+            text-align: center;
+        }
+        
+        .qr-code-container img {
+            max-width: 180px;
+            height: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            body {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 2FA Login Test</h1>
+            <p class="subtitle">Zetik Casino - Two-Factor Authentication</p>
+        </div>
+
+        <!-- Step 0: API Configuration -->
+        <div class="section" style="border-left-color: #28a745;">
+            <h2 style="color: #28a745;"><span class="step-indicator">Step 0:</span> API Configuration</h2>
+            <div class="form-group">
+                <label>Backend URL</label>
+                <input type="text" id="apiUrl" value="http://localhost:3000" placeholder="http://localhost:3000">
+            </div>
+        </div>
+
+        <!-- Step 1: Login -->
+        <div class="section">
+            <h2><span class="step-indicator">Step 1:</span> Login</h2>
+            <div class="instructions">
+                <strong>💡 Testing Device-Based 2FA:</strong>
+                <ul style="margin-left: 20px; margin-top: 5px; font-size: 13px;">
+                    <li><strong>New user registration:</strong> First login after registration → No 2FA required (device automatically trusted)</li>
+                    <li><strong>Trusted device:</strong> If you login from the same browser again → No 2FA required</li>
+                    <li><strong>New device:</strong> To test 2FA prompt, try:
+                        <ul style="margin-left: 15px; margin-top: 3px;">
+                            <li>Switch to a different browser (Chrome → Safari, Firefox, Edge)</li>
+                            <li>Enable mobile mode in DevTools (F12 → Device Toolbar)</li>
+                            <li>Use a real mobile device</li>
+                        </ul>
+                    </li>
+                    <li><strong>How it works:</strong> System tracks device by IP + User-Agent. Same device = trusted, different = requires 2FA</li>
+                    <li><strong>⚠️ Important:</strong> Each 2FA code can be used only ONCE (replay attack protection). Wait 30 seconds for a new code if needed.</li>
+                </ul>
+            </div>
+            <div class="form-group">
+                <label>Email / Username</label>
+                <input type="text" id="loginEmail" value="test@example.com" placeholder="Enter email or username">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="loginPassword" value="TestPassword123" placeholder="Enter password">
+                    <button type="button" class="password-action-btn" onclick="togglePassword('loginPassword', this)" title="Show/Hide password">👁️</button>
+                    <button type="button" class="password-action-btn" onclick="copyPassword('loginPassword')" title="Copy password">📋</button>
+                </div>
+            </div>
+            <button onclick="login()">🚀 Login</button>
+            <div id="loginStatus" class="status"></div>
+        </div>
+
+        <!-- Step 1.5: 2FA Verification (shown if required) -->
+        <div class="section" id="verify2FASection" style="display:none;">
+            <h2><span class="step-indicator">Step 1.5:</span> Verify 2FA Code</h2>
+            <div class="instructions">
+                <strong>🔐 New device detected!</strong> Enter your 2FA code to complete login.
+            </div>
+            <div class="form-group">
+                <label>Enter 6-digit code from your authenticator app</label>
+                <input type="text" id="verify2FACode" placeholder="123456" maxlength="6">
+            </div>
+            <input type="hidden" id="pendingAuthToken">
+            <button onclick="verify2FALogin()">✅ Verify & Login</button>
+            <div id="verify2FAStatus" class="status"></div>
+        </div>
+
+        <!-- Step 2: Check 2FA Status -->
+        <div class="section" id="statusSection" style="display:none;">
+            <h2><span class="step-indicator">Step 2:</span> 2FA Status</h2>
+            <div class="instructions">
+                <strong>ℹ️ Two 2FA Modes:</strong>
+                <ul style="margin-left: 18px; margin-top: 3px; font-size: 11px;">
+                    <li><strong>Login:</strong> Smart check - trusted device = no 2FA, new device = requires 2FA</li>
+                    <li><strong>Critical ops (withdrawals, tips, password change, email update):</strong> STRICT mode - ALWAYS requires 2FA enabled + code, no device bypass</li>
+                </ul>
+            </div>
+            <button onclick="check2FAStatus()">Check 2FA Status</button>
+            <div id="statusResult" class="status"></div>
+        </div>
+
+        <!-- Step 3: Generate 2FA -->
+        <div class="section" id="generateSection" style="display:none;">
+            <h2><span class="step-indicator">Step 3:</span> Generate 2FA Setup</h2>
+            <div class="instructions">
+                <strong>📱 Instructions:</strong>
+                <ol style="margin-left: 20px; margin-top: 5px;">
+                    <li>Click "Generate QR Code"</li>
+                    <li>Open Google Authenticator / Authy app</li>
+                    <li>Scan the QR code below</li>
+                    <li>Enter the 6-digit code in Step 4</li>
+                </ol>
+            </div>
+            <button onclick="generate2FA()">📲 Generate QR Code</button>
+            <div id="generateStatus" class="status"></div>
+            <div id="qrCodeContainer" class="hidden qr-code-container" style="margin-top: 10px;">
+                <h3 style="font-size: 13px; margin-bottom: 8px;">Scan with your authenticator:</h3>
+                <img id="qrCodeImage" alt="QR Code">
+                <p style="font-size: 11px; margin-top: 8px;"><strong>Manual Entry Key:</strong></p>
+                <div class="secret-code" id="manualKey" style="font-size: 10px; padding: 6px;"></div>
+            </div>
+        </div>
+
+        <!-- Step 4: Enable 2FA -->
+        <div class="section" id="enableSection" style="display:none;">
+            <h2><span class="step-indicator">Step 4:</span> Enable 2FA</h2>
+            <div class="form-group">
+                <label>Enter 6-digit code from your app</label>
+                <input type="text" id="enable2FACode" placeholder="123456" maxlength="6">
+            </div>
+            <input type="hidden" id="secretForEnable">
+            <button onclick="enable2FA()">✅ Enable 2FA</button>
+            <div id="enableStatus" class="status"></div>
+        </div>
+
+        <!-- Step 5: Test Login with 2FA -->
+        <div class="section" id="testSection" style="display:none;">
+            <h2><span class="step-indicator">Step 5:</span> Test Login with 2FA from New Device</h2>
+            <div class="instructions">
+                <strong>🧪 Test scenarios:</strong>
+                <ol style="margin-left: 20px; margin-top: 5px;">
+                    <li><strong>Logout</strong> - Clear all sessions</li>
+                    <li><strong>Login from same device</strong> - Should work WITHOUT 2FA (trusted device)</li>
+                    <li><strong>Clear browser cache/cookies</strong> - Simulate new device</li>
+                    <li><strong>Login again</strong> - Should require 2FA (new device detected)</li>
+                    <li><strong>Try with wrong code</strong> - Should fail</li>
+                    <li><strong>Try with correct code</strong> - Should succeed</li>
+                </ol>
+                <p style="margin-top: 10px; color: #666; font-size: 12px;">
+                    💡 <strong>Note:</strong> The system tracks device by IP + User-Agent. 
+                    Same device = no 2FA required. New device = 2FA required.
+                </p>
+            </div>
+            <button onclick="logout()">🚪 Logout & Test Again</button>
+        </div>
+
+        <!-- Step 6: Test TwoFactorGuard on /auth/password -->
+        <div class="section" id="guardTestSection" style="display:none;">
+            <h2><span class="step-indicator">Step 6:</span> Test STRICT Mode (Change Password)</h2>
+            <div class="instructions">
+                <strong>🛡️ STRICT Mode:</strong> Tests critical operation protection on <code>/auth/password</code> endpoint.
+                <br><br>
+                <strong>⚠️ Test scenarios (STRICT - no device bypass):</strong>
+                <ol style="margin-left: 18px; margin-top: 3px; font-size: 11px;">
+                    <li><strong>If 2FA NOT enabled</strong> → fail with "2FA must be enabled"</li>
+                    <li><strong>Without 2FA code</strong> → fail with "2FA code required"</li>
+                    <li><strong>With wrong code</strong> (000000) → fail with "Invalid 2FA code"</li>
+                    <li><strong>With correct code</strong> → success (even from trusted device)</li>
+                </ol>
+                <p style="margin-top: 5px; color: #dc3545; font-size: 10px;">
+                    💡 Same strict behavior for: withdrawals, vault withdraw, tips, email update
+                </p>
+            </div>
+            <div class="form-group">
+                <label>Current Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="guardCurrentPassword" value="TestPassword123">
+                    <button type="button" class="password-action-btn" onclick="togglePassword('guardCurrentPassword', this)" title="Show/Hide password">👁️</button>
+                    <button type="button" class="password-action-btn" onclick="copyPassword('guardCurrentPassword')" title="Copy password">📋</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>New Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="guardNewPassword" value="NewPassword123">
+                    <button type="button" class="password-action-btn" onclick="togglePassword('guardNewPassword', this)" title="Show/Hide password">👁️</button>
+                    <button type="button" class="password-action-btn" onclick="copyPassword('guardNewPassword')" title="Copy password">📋</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>2FA Code</label>
+                <input type="text" id="guardTwoFactorCode" placeholder="123456" maxlength="6">
+            </div>
+            <button onclick="testChangePassword()">🔒 Change Password (Test Guard)</button>
+            <div id="guardTestStatus" class="status"></div>
+        </div>
+
+        <!-- Step 7: Disable 2FA -->
+        <div class="section" id="disable2FASection" style="display:none; border-left-color: #dc3545;">
+            <h2 style="color: #dc3545;"><span class="step-indicator">Step 7:</span> Disable 2FA</h2>
+            <div class="instructions">
+                <strong>⚠️ Disable 2FA:</strong>
+                <p style="margin-top: 3px; font-size: 11px;">
+                    Disabling 2FA removes the secret from database. You'll need a new QR code to re-enable.
+                </p>
+                <p style="margin-top: 3px; color: #dc3545; font-size: 10px;">
+                    ⚠️ Note: After disabling, you won't be able to perform critical operations (withdrawals, tips, etc.) until 2FA is enabled again.
+                </p>
+            </div>
+            <div class="form-group">
+                <label>Enter 6-digit code from your authenticator app</label>
+                <input type="text" id="disable2FACode" placeholder="123456" maxlength="6">
+            </div>
+            <button onclick="disable2FA()">🚫 Disable 2FA</button>
+            <div id="disable2FAStatus" class="status"></div>
+        </div>
+    </div>
+
+    <script>
+        let accessToken = null;
+
+        function getApiUrl() {
+            return document.getElementById('apiUrl').value.trim() || 'http://localhost:3000';
+        }
+
+        function showStatus(elementId, message, type) {
+            const statusEl = document.getElementById(elementId);
+            statusEl.className = `status ${type}`;
+            statusEl.textContent = message;
+            statusEl.style.display = 'block';
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            if (!email || !password) {
+                showStatus('loginStatus', 'Please enter email and password', 'error');
+                return;
+            }
+
+            const body = {
+                email,
+                password
+            };
+
+            try {
+                const response = await fetch(`${getApiUrl()}/v1/auth/login/email`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Check if 2FA verification is required
+                    if (data.requiresTwoFactor) {
+                        document.getElementById('pendingAuthToken').value = data.pendingAuthToken;
+                        document.getElementById('verify2FASection').style.display = 'block';
+                        showStatus('loginStatus', '⚠️ 2FA required - New device detected', 'info');
+                    } else {
+                        // Normal login success
+                        accessToken = data.accessToken;
+                        showStatus('loginStatus', '✅ Login successful!', 'success');
+                        document.getElementById('statusSection').style.display = 'block';
+                        document.getElementById('generateSection').style.display = 'block';
+                        document.getElementById('guardTestSection').style.display = 'block';
+                        
+                        // Auto-check 2FA status
+                        setTimeout(check2FAStatus, 500);
+                    }
+                } else {
+                    showStatus('loginStatus', `❌ Login failed: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus('loginStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function verify2FALogin() {
+            const pendingAuthToken = document.getElementById('pendingAuthToken').value.trim();
+            const twoFactorCode = document.getElementById('verify2FACode').value.trim();
+
+            if (!pendingAuthToken || !twoFactorCode) {
+                showStatus('verify2FAStatus', 'Please enter 2FA code', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${getApiUrl()}/v1/auth/login/verify-2fa`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        pendingAuthToken,
+                        twoFactorCode
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    accessToken = data.accessToken;
+                    showStatus('verify2FAStatus', '✅ 2FA verified! Login successful!', 'success');
+                    showStatus('loginStatus', '✅ Login successful with 2FA!', 'success');
+                    document.getElementById('verify2FASection').style.display = 'none';
+                    document.getElementById('statusSection').style.display = 'block';
+                    document.getElementById('generateSection').style.display = 'block';
+                    document.getElementById('guardTestSection').style.display = 'block';
+                    
+                    // Auto-check 2FA status
+                    setTimeout(check2FAStatus, 500);
+                } else {
+                    showStatus('verify2FAStatus', `❌ 2FA verification failed: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus('verify2FAStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function check2FAStatus() {
+            if (!accessToken) {
+                showStatus('statusResult', 'Please login first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${getApiUrl()}/v1/auth/2fa/status`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    const isEnabled = data.enabled;
+                    showStatus('statusResult', 
+                        isEnabled 
+                            ? '✅ 2FA is ENABLED for this user' 
+                            : '⚠️ 2FA is NOT enabled for this user', 
+                        isEnabled ? 'success' : 'info'
+                    );
+
+                    if (isEnabled) {
+                        document.getElementById('testSection').style.display = 'block';
+                        document.getElementById('disable2FASection').style.display = 'block';
+                    }
+                } else {
+                    showStatus('statusResult', `❌ Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus('statusResult', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function generate2FA() {
+            if (!accessToken) {
+                showStatus('generateStatus', 'Please login first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${getApiUrl()}/v1/auth/2fa/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('qrCodeImage').src = data.qrCodeDataUrl;
+                    document.getElementById('manualKey').textContent = data.manualEntryKey;
+                    document.getElementById('secretForEnable').value = data.manualEntryKey;
+                    document.getElementById('qrCodeContainer').classList.remove('hidden');
+                    document.getElementById('enableSection').style.display = 'block';
+                    showStatus('generateStatus', '✅ QR code generated! Scan with your authenticator app.', 'success');
+                } else {
+                    showStatus('generateStatus', `❌ Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus('generateStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function enable2FA() {
+            const code = document.getElementById('enable2FACode').value.trim();
+            const secret = document.getElementById('secretForEnable').value;
+
+            if (!code || code.length !== 6) {
+                showStatus('enableStatus', 'Please enter 6-digit code from your authenticator app', 'error');
+                return;
+            }
+
+            if (!accessToken) {
+                showStatus('enableStatus', 'Please login first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${getApiUrl()}/v1/auth/2fa/enable`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        token: code,
+                        secret: secret
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showStatus('enableStatus', '✅ 2FA enabled successfully! Now logout and try logging in with 2FA code.', 'success');
+                    document.getElementById('testSection').style.display = 'block';
+                    document.getElementById('guardTestSection').style.display = 'block';
+                    document.getElementById('disable2FASection').style.display = 'block';
+                    
+                    // Refresh status
+                    setTimeout(check2FAStatus, 500);
+                } else {
+                    showStatus('enableStatus', `❌ Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus('enableStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testChangePassword() {
+            const currentPassword = document.getElementById('guardCurrentPassword').value.trim();
+            const newPassword = document.getElementById('guardNewPassword').value.trim();
+            const twoFactorCode = document.getElementById('guardTwoFactorCode').value.trim();
+
+            if (!currentPassword || !newPassword) {
+                showStatus('guardTestStatus', 'Please enter current and new password', 'error');
+                return;
+            }
+
+            if (!accessToken) {
+                showStatus('guardTestStatus', 'Please login first', 'error');
+                return;
+            }
+
+            const body = {
+                currentPassword,
+                newPassword
+            };
+
+            // Add 2FA code if provided
+            if (twoFactorCode) {
+                body.twoFactorCode = twoFactorCode;
+            }
+
+            try {
+                const response = await fetch(`${getApiUrl()}/v1/auth/password`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showStatus('guardTestStatus', '✅ Password changed successfully! TwoFactorGuard worked!', 'success');
+                    // Revert password back
+                    document.getElementById('guardCurrentPassword').value = newPassword;
+                    document.getElementById('guardNewPassword').value = currentPassword;
+                } else {
+                    showStatus('guardTestStatus', `❌ Failed: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus('guardTestStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function logout() {
+            accessToken = null;
+            document.getElementById('loginTwoFactorCode').value = '';
+            document.getElementById('enable2FACode').value = '';
+            document.getElementById('guardTwoFactorCode').value = '';
+            showStatus('loginStatus', 'ℹ️ Logged out. Try logging in again with 2FA code!', 'info');
+            
+            // Hide sections
+            document.getElementById('statusSection').style.display = 'none';
+            document.getElementById('generateSection').style.display = 'none';
+            document.getElementById('enableSection').style.display = 'none';
+            document.getElementById('guardTestSection').style.display = 'none';
+            document.getElementById('qrCodeContainer').classList.add('hidden');
+        }
+
+        // Auto-focus on email field
+        document.getElementById('loginEmail').focus();
+
+        function togglePassword(inputId, button) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.textContent = '🙈';
+                button.title = 'Hide password';
+            } else {
+                input.type = 'password';
+                button.textContent = '👁️';
+                button.title = 'Show password';
+            }
+        }
+
+        function copyPassword(inputId) {
+            const input = document.getElementById(inputId);
+            const originalType = input.type;
+            
+            // Temporarily change to text to copy
+            input.type = 'text';
+            input.select();
+            
+            try {
+                document.execCommand('copy');
+                
+                // Visual feedback
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = '✅';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 1000);
+            } catch (err) {
+                console.error('Failed to copy:', err);
+            } finally {
+                // Restore original type
+                input.type = originalType;
+                input.blur();
+            }
+        }
+
+        async function disable2FA() {
+            const code = document.getElementById('disable2FACode').value.trim();
+
+            if (!code || code.length !== 6) {
+                showStatus('disable2FAStatus', 'Please enter 6-digit code from your authenticator app', 'error');
+                return;
+            }
+
+            if (!accessToken) {
+                showStatus('disable2FAStatus', 'Please login first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${getApiUrl()}/v1/auth/2fa/disable`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        token: code
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showStatus('disable2FAStatus', '✅ 2FA disabled successfully! Secret removed from database.', 'success');
+                    document.getElementById('testSection').style.display = 'none';
+                    document.getElementById('disable2FASection').style.display = 'none';
+                    setTimeout(check2FAStatus, 1000);
+                } else {
+                    showStatus('disable2FAStatus', `❌ Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus('disable2FAStatus', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Allow Enter key to submit login
+        document.getElementById('loginPassword').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') login();
+        });
+        document.getElementById('loginTwoFactorCode').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') login();
+        });
+    </script>
+</body>
+</html>

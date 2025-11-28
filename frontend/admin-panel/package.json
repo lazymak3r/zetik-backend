@@ -1,0 +1,108 @@
+{
+  "name": "frontend/admin-panel",
+  "version": "0.1.0",
+  "private": true,
+  "homepage": "/v1/admin",
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^7.1.0",
+    "@mui/material": "^7.1.0",
+    "@mui/x-data-grid": "^8.4.0",
+    "@mui/x-date-pickers": "^8.4.0",
+    "@reduxjs/toolkit": "^2.8.2",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.9.0",
+    "dayjs": "^1.11.13",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.6.0",
+    "react-scripts": "^5.0.1",
+    "recharts": "^2.15.3",
+    "socket.io-client": "^4.8.1",
+    "typescript": "^5.8.3",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "PORT=${PORT:-3002} react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ],
+    "rules": {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          "argsIgnorePattern": "^_",
+          "varsIgnorePattern": "^_",
+          "ignoreRestSiblings": true
+        }
+      ],
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-unsafe-return": "off",
+      "@typescript-eslint/no-unsafe-call": "off",
+      "@typescript-eslint/no-unsafe-argument": "off",
+      "@typescript-eslint/no-floating-promises": "off",
+      "@typescript-eslint/no-misused-promises": "off",
+      "@typescript-eslint/require-await": "off",
+      "@typescript-eslint/restrict-template-expressions": "off",
+      "@typescript-eslint/no-unnecessary-type-assertion": "off",
+      "@typescript-eslint/unbound-method": "off",
+      "@typescript-eslint/no-redundant-type-constituents": "off",
+      "@typescript-eslint/no-base-to-string": "off",
+      "@typescript-eslint/no-duplicate-type-constituents": "off",
+      "@typescript-eslint/no-unsafe-enum-comparison": "off",
+      "react/jsx-no-target-blank": "off",
+      "react-hooks/exhaustive-deps": "warn",
+      "no-console": "off",
+      "no-debugger": "warn",
+      "no-unused-vars": "off",
+      "no-empty": "warn",
+      "no-unreachable": "warn",
+      "prefer-const": "warn",
+      "jsx-a11y/anchor-is-valid": "off",
+      "import/no-anonymous-default-export": "off"
+    },
+    "overrides": [
+      {
+        "files": [
+          "**/*.js",
+          "**/*.jsx"
+        ],
+        "rules": {
+          "@typescript-eslint/no-var-requires": "off"
+        }
+      }
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.5",
+    "@types/react-dom": "^19.1.5",
+    "@types/node": "^24.0.4",
+    "@types/react-router-dom": "^5.3.3",
+    "eslint": "^8.56.0"
+  }
+}

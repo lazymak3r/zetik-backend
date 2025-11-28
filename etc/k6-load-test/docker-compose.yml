@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  k6:
+    image: grafana/k6:latest
+    working_dir: /app
+    volumes:
+      - .:/app
+      - ./reports:/app/reports
+    env_file:
+      - env 

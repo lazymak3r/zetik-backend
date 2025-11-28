@@ -1,0 +1,4 @@
+export enum ChatMessageTypeEnum {
+  MESSAGE = 'MESSAGE',
+  SERVER_NOTIFICATION_TIP = 'SERVER_NOTIFICATION_TIP',
+}

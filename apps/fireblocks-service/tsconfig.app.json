@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "outDir": "dist"
+  },
+  "include": ["src/**/*", "../backend/src/**/*"],
+  "exclude": [
+    "node_modules",
+    "test/**/*",
+    "dist/**/*",
+    "**/*.spec.ts",
+    "**/__tests__/**/*",
+    "**/*.test.ts",
+    "../backend/src/**/*.spec.ts",
+    "../backend/src/**/__tests__/**/*",
+    "../backend/src/**/*.test.ts",
+    "../admin-panel/**/*",
+    "../../apps/admin-panel/**/*"
+  ],
+  "references": [{ "path": "../../libs/common" }, { "path": "../../libs/shared-entities" }]
+}

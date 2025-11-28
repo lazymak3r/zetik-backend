@@ -1,0 +1,21 @@
+{
+  "name": "k6-game-load-testing",
+  "version": "1.0.0",
+  "description": "K6 load testing for game project",
+  "scripts": {
+    "clean": "rm -f reports/*.json reports/*.html && echo '🧹 Cleaned old reports'",
+    "test:smoke": "npm run clean && docker-compose run --rm -e GAME=${GAME:-DICE} k6 run --env TEST_TYPE=smoke --out json=reports/smoke-$(date +%Y%m%d-%H%M%S).json --summary-export=reports/smoke-summary-$(date +%Y%m%d-%H%M%S).json run.js",
+    "test:load": "npm run clean && docker-compose run --rm -e GAME=${GAME:-DICE} k6 run --env TEST_TYPE=load --duration=${DURATION:-60s} --vus=${VUS:-5} --out json=reports/load-$(date +%Y%m%d-%H%M%S).json --summary-export=reports/load-summary-$(date +%Y%m%d-%H%M%S).json run.js",
+    "report": "node generate-report.js && open reports/report.html",
+    "report:generate": "node generate-report.js",
+    "report:open": "open reports/report.html"
+  },
+  "keywords": [
+    "k6",
+    "load-testing",
+    "performance",
+    "game"
+  ],
+  "author": "",
+  "license": "MIT"
+}

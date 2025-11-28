@@ -1,0 +1,159 @@
+{
+  "auth": {
+    "error": {
+      "invalid_credentials": "Invalid email or password",
+      "user_banned": "Your account has been suspended",
+      "invalid_refresh_token": "Session expired, please login again",
+      "invalid_login_method": "Invalid authentication method for this account",
+      "jwt_secrets_not_configured": "Authentication system not properly configured"
+    }
+  },
+  "validation": {
+    "error": {
+      "invalid_uuid": "Invalid ID format",
+      "invalid_email": "Please enter a valid email address",
+      "invalid_password": "Password must be at least 8 characters long",
+      "invalid_username": "Username must be 3-20 characters and contain only letters, numbers, and underscores",
+      "invalid_asset": "Unsupported cryptocurrency",
+      "invalid_amount_format": "Please enter a valid amount",
+      "invalid_amount_precision": "Amount cannot have more than 8 decimal places",
+      "invalid_address_format": "Invalid cryptocurrency address format",
+      "amount_too_small": "Amount is too small",
+      "amount_too_large": "Amount is too large",
+      "required_field": "This field is required"
+    }
+  },
+  "financial": {
+    "error": {
+      "insufficient_balance": "Insufficient balance",
+      "deposit_amount_too_small": "Deposit amount is below minimum",
+      "deposit_amount_too_large": "Deposit amount exceeds maximum limit",
+      "withdraw_amount_too_small": "Withdrawal amount is below minimum",
+      "withdraw_amount_too_large": "Withdrawal amount exceeds maximum limit",
+      "bet_amount_too_small": "Bet amount is too small",
+      "bet_amount_too_large": "Bet amount is too large",
+      "daily_withdraw_limit_exceeded": "Daily withdrawal limit exceeded",
+      "balance_negative": "Balance cannot be negative",
+      "balance_exceeds_maximum": "Balance exceeds maximum allowed value",
+      "precision_exceeds_maximum": "Amount precision exceeds maximum allowed",
+      "asset_not_supported": "Cryptocurrency not supported",
+      "invalid_operation": "Invalid financial operation"
+    }
+  },
+  "payments": {
+    "error": {
+      "wallet_not_found": "Wallet not found",
+      "address_generation_failed": "Failed to generate deposit address",
+      "qr_code_generation_failed": "Failed to generate QR code",
+      "transaction_not_found": "Transaction not found",
+      "withdraw_request_not_found": "Withdrawal request not found",
+      "withdraw_request_not_pending": "Withdrawal request is not pending",
+      "invalid_withdrawal_parameters": "Invalid withdrawal parameters",
+      "fireblocks_transaction_failed": "Transaction processing failed",
+      "withdraw_request_creation_failed": "Failed to create withdrawal request",
+      "withdraw_approval_failed": "Failed to approve withdrawal",
+      "withdraw_rejection_failed": "Failed to reject withdrawal"
+    }
+  },
+  "system": {
+    "error": {
+      "internal_server_error": "Internal server error",
+      "database_error": "Database error occurred",
+      "database_transaction_error": "Database transaction error",
+      "failed_to_update_balance": "Failed to update balance",
+      "failed_to_process_transactions": "Failed to process transactions",
+      "resource_not_found": "Resource not found",
+      "resource_conflict": "Resource conflict",
+      "invalid_request": "Invalid request",
+      "access_denied": "Access denied",
+      "authentication_required": "Authentication required",
+      "too_many_requests": "Too many requests, please try again later"
+    }
+  },
+  "user": {
+    "error": {
+      "email_already_exists": "Email address is already registered",
+      "username_already_exists": "Username is already taken",
+      "user_not_found": "User not found",
+      "creation_failed": "Failed to create user account"
+    }
+  },
+  "admin": {
+    "error": {
+      "admin_not_found": "Administrator not found",
+      "password_not_set": "Administrator password not set",
+      "setup_failed": "Administrator setup failed"
+    }
+  },
+  "games": {
+    "names": {
+      "crash": "Crash",
+      "dice": "Dice",
+      "mines": "Mines",
+      "blackjack": "Blackjack",
+      "roulette": "Roulette",
+      "plinko": "Plinko",
+      "limbo": "Limbo"
+    },
+    "status": {
+      "pending": "Pending",
+      "active": "Active",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "actions": {
+      "place_bet": "Place Bet",
+      "cash_out": "Cash Out",
+      "auto_cash_out": "Auto Cash Out"
+    },
+    "error": {
+      "game_not_found": "Game not found",
+      "game_already_started": "Game has already started",
+      "game_not_active": "Game is not active",
+      "invalid_bet_amount": "Invalid bet amount",
+      "bet_placement_failed": "Failed to place bet",
+      "cashout_failed": "Failed to cash out",
+      "game_creation_failed": "Failed to create game session"
+    }
+  },
+  "websocket": {
+    "error": {
+      "authentication_failed": "WebSocket authentication failed",
+      "not_authenticated": "Not authenticated",
+      "room_not_found": "Game room not found",
+      "join_room_failed": "Failed to join game room",
+      "leave_room_failed": "Failed to leave game room",
+      "invalid_game_type": "Invalid game type",
+      "room_full": "Game room is full",
+      "connection_error": "Connection error occurred"
+    },
+    "events": {
+      "connected": "Successfully connected to game server",
+      "disconnected": "Disconnected from game server",
+      "room_joined": "Joined game room",
+      "room_left": "Left game room",
+      "player_joined": "Player joined the room",
+      "player_left": "Player left the room",
+      "game_started": "Game has started",
+      "game_ended": "Game has ended"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "success": "Success",
+    "error": "Error",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "yes": "Yes",
+    "no": "No",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "close": "Close",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "reset": "Reset"
+  }
+}

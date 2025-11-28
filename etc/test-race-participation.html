@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Race Participation Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .status {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.2);
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+        .status.connected {
+            background: #10b981;
+        }
+        .status.disconnected {
+            background: #ef4444;
+        }
+        .content {
+            padding: 30px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .section:last-child {
+            border-bottom: none;
+        }
+        .section-title {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        button.secondary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        button.danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        .badge.pending { background: #fef3c7; color: #92400e; }
+        .badge.active { background: #d1fae5; color: #065f46; }
+        .badge.ended { background: #e5e7eb; color: #374151; }
+        .badge.weekly { background: #dbeafe; color: #1e40af; }
+        .badge.monthly { background: #fce7f3; color: #9f1239; }
+        .badge.affiliate { background: #fef3c7; color: #92400e; }
+        .log {
+            background: #1f2937;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 4px 0;
+        }
+        .log-entry.error {
+            color: #ef4444;
+        }
+        .log-entry.success {
+            color: #10b981;
+        }
+        .log-entry.info {
+            color: #60a5fa;
+        }
+        .log-time {
+            color: #9ca3af;
+            margin-right: 8px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #333;
+        }
+        .race-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 2px solid #e0e0e0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .race-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        .race-card.weekly {
+            border-left: 6px solid #3b82f6;
+        }
+        .race-card.monthly {
+            border-left: 6px solid #ec4899;
+        }
+        .race-card.affiliate {
+            border-left: 6px solid #f59e0b;
+        }
+        .race-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .race-card-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #333;
+        }
+        .race-card-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .race-stat {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        .race-stat-label {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 3px;
+        }
+        .race-stat-value {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+        }
+        .race-my-stats {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .race-my-stats-title {
+            font-size: 0.9em;
+            color: #92400e;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .race-my-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .race-my-stat {
+            text-align: center;
+        }
+        .race-my-stat-label {
+            font-size: 0.75em;
+            color: #92400e;
+        }
+        .race-my-stat-value {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #78350f;
+        }
+        .race-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .race-actions button {
+            flex: 1;
+            padding: 10px;
+            font-size: 0.9em;
+            margin: 0;
+        }
+        .not-participating {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            font-style: italic;
+        }
+        .bet-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .bet-controls input {
+            flex: 1;
+            margin: 0;
+        }
+        .bet-controls button {
+            margin: 0;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+            }
+            50% {
+                transform: scale(1.02);
+                box-shadow: 0 0 20px 5px rgba(245, 158, 11, 0.4);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏁 Race Participation Tester</h1>
+            <div id="wsStatus" class="status disconnected">WS: Disconnected</div>
+        </div>
+        
+        <div class="content">
+            <!-- Login Section -->
+            <div class="section">
+                <div class="section-title">🔐 Authentication</div>
+                <div class="form-group">
+                    <label for="serverUrl">Server URL (without /v1):</label>
+                    <input type="text" id="serverUrl" value="http://localhost:4000" placeholder="http://localhost:4000">
+                </div>
+                <div class="grid">
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" placeholder="user@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" placeholder="password" value="TestPassword123">
+                    </div>
+                </div>
+                <button onclick="login()">Login</button>
+            </div>
+
+            <!-- Actions Section -->
+            <div class="section" id="actionsSection" style="display: none;">
+                <div class="section-title">⚡ Quick Actions</div>
+                <div class="grid">
+                    <div class="stat-card">
+                        <div class="stat-label">User ID</div>
+                        <div class="stat-value" style="font-size: 1em;" id="userId">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Username</div>
+                        <div class="stat-value" style="font-size: 1em;" id="username">-</div>
+                    </div>
+                </div>
+                <div class="bet-controls">
+                    <label style="margin: 0;">Bet Amount (BTC):</label>
+                    <input type="text" id="betAmount" value="0.0001" placeholder="0.0001">
+                    <button class="secondary" onclick="placeBet()">🎲 Place Bet</button>
+                    <button onclick="refreshRaces()">🔄 Refresh</button>
+                </div>
+            </div>
+
+            <!-- Races Cards -->
+            <div class="section" id="racesSection" style="display: none;">
+                <div class="section-title">🏆 My Active Races</div>
+                <div class="grid" id="racesGrid">
+                    <div class="not-participating">No races yet. Click "Refresh"</div>
+                </div>
+            </div>
+
+            <!-- Log Section -->
+            <div class="section">
+                <div class="section-title">📝 Activity Log</div>
+                <button onclick="clearLog()">Clear Log</button>
+                <div id="log" class="log"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        let state = {
+            serverUrl: '',
+            token: '',
+            userId: '',
+            username: '',
+            wsClients: {},
+            races: []
+        };
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerHTML = `<span class="log-time">[${time}]</span>${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        async function login() {
+            const serverUrl = document.getElementById('serverUrl').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!serverUrl || !email || !password) {
+                log('❌ Please fill all fields', 'error');
+                return;
+            }
+
+            state.serverUrl = serverUrl;
+
+            try {
+                log(`🔄 Logging in as ${email}...`, 'info');
+                const response = await fetch(`${serverUrl}/v1/auth/login/email`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Login failed');
+                }
+
+                const data = await response.json();
+                state.token = data.accessToken;
+                state.userId = data.user.id;
+                state.username = data.user.username || data.user.email;
+
+                document.getElementById('userId').textContent = state.userId.substring(0, 12) + '...';
+                document.getElementById('username').textContent = state.username;
+                
+                document.getElementById('actionsSection').style.display = 'block';
+                document.getElementById('racesSection').style.display = 'block';
+
+                log(`✅ Logged in successfully! User: ${state.username}`, 'success');
+                
+                // Auto-refresh races
+                await refreshRaces();
+            } catch (error) {
+                log(`❌ Login error: ${error.message}`, 'error');
+            }
+        }
+
+        async function placeBet() {
+            if (!state.token) {
+                log('❌ Please login first', 'error');
+                return;
+            }
+
+            const betAmount = document.getElementById('betAmount').value.trim();
+            if (!betAmount || parseFloat(betAmount) <= 0) {
+                log('❌ Invalid bet amount', 'error');
+                return;
+            }
+
+            try {
+                log(`🎲 Placing dice bet (${betAmount} BTC)...`, 'info');
+                const response = await fetch(`${state.serverUrl}/v1/games/dice/bet`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${state.token}`
+                    },
+                    body: JSON.stringify({
+                        gameSessionId: generateUUID(),
+                        betAmount: betAmount,
+                        betType: "ROLL_OVER",
+                        targetNumber: 50,
+                        clientSeed: `test-${Date.now()}`
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Bet failed');
+                }
+
+                const data = await response.json();
+                const result = data.outcome === 'WIN' ? '🎉 WON' : '😔 LOST';
+                log(`✅ Bet placed! ${result} | Roll: ${data.result} | Payout: ${data.payout || 0}`, 'success');
+                
+                // Auto-refresh after 2 seconds to see updated wager
+                setTimeout(() => refreshRaces(), 2000);
+            } catch (error) {
+                log(`❌ Bet error: ${error.message}`, 'error');
+            }
+        }
+
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        async function refreshRaces() {
+            if (!state.token) {
+                log('❌ Please login first', 'error');
+                return;
+            }
+
+            try {
+                log('🔄 Fetching available races...', 'info');
+                
+                // Fetch all available races (weekly, monthly, affiliate)
+                const response = await fetch(`${state.serverUrl}/v1/bonus/races`, {
+                    headers: { 'Authorization': `Bearer ${state.token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch races');
+                }
+
+                const data = await response.json();
+                const races = data.races || [];
+
+                // Fetch participation data for each race
+                const racesWithData = [];
+                
+                for (const race of races) {
+                    try {
+                        // Get user's participation stats
+                        const meResponse = await fetch(`${state.serverUrl}/v1/bonus/races/${race.id}/me`, {
+                            headers: { 'Authorization': `Bearer ${state.token}` }
+                        });
+                        
+                        if (meResponse.ok) {
+                            const meData = await meResponse.json();
+                            
+                            // Determine race type
+                            let raceType = 'weekly';
+                            if (race.name.includes('Monthly')) {
+                                raceType = 'monthly';
+                            } else if (race.referralCode || race.sponsorId) {
+                                raceType = 'affiliate';
+                            }
+                            
+                            racesWithData.push({
+                                ...race,
+                                type: raceType,
+                                myWagered: meData.wagered || '0',
+                                myPlace: meData.place || '-',
+                                myPrize: meData.prize || '0'
+                            });
+                        }
+                    } catch (error) {
+                        // User not participating in this race, skip
+                    }
+                }
+
+                state.races = racesWithData;
+
+                renderRacesCards();
+                
+                const weeklyCount = racesWithData.filter(r => r.type === 'weekly').length;
+                const monthlyCount = racesWithData.filter(r => r.type === 'monthly').length;
+                const affiliateCount = racesWithData.filter(r => r.type === 'affiliate').length;
+
+                log(`✅ Found ${state.races.length} races: ${weeklyCount} weekly, ${monthlyCount} monthly, ${affiliateCount} affiliate`, 'success');
+                
+                // Connect to WebSocket for all races
+                state.races.forEach(race => connectToRace(race));
+            } catch (error) {
+                log(`❌ Refresh error: ${error.message}`, 'error');
+            }
+        }
+
+        function renderRacesCards() {
+            const grid = document.getElementById('racesGrid');
+            
+            if (state.races.length === 0) {
+                grid.innerHTML = '<div class="not-participating">You are not participating in any races yet. Place a bet to join!</div>';
+                return;
+            }
+
+            grid.innerHTML = state.races.map(race => {
+                const typeLabel = race.type.charAt(0).toUpperCase() + race.type.slice(1);
+                const icon = race.type === 'weekly' ? '📅' : race.type === 'monthly' ? '📆' : '🤝';
+                
+                return `
+                    <div class="race-card ${race.type}">
+                        <div class="race-card-header">
+                            <div class="race-card-title">${icon} ${race.name}</div>
+                            <span class="badge ${race.type}">${typeLabel}</span>
+                        </div>
+                        
+                        <div class="race-card-stats">
+                            <div class="race-stat">
+                                <div class="race-stat-label">Prize Pool</div>
+                                <div class="race-stat-value">${race.prizePool} ${race.fiat || race.asset}</div>
+                            </div>
+                            <div class="race-stat">
+                                <div class="race-stat-label">Status</div>
+                                <div class="race-stat-value">
+                                    <span class="badge ${race.status.toLowerCase()}">${race.status}</span>
+                                </div>
+                            </div>
+                            <div class="race-stat">
+                                <div class="race-stat-label">Starts</div>
+                                <div class="race-stat-value" style="font-size: 0.8em;">${new Date(race.startsAt).toLocaleDateString()}</div>
+                            </div>
+                            <div class="race-stat">
+                                <div class="race-stat-label">Ends</div>
+                                <div class="race-stat-value" style="font-size: 0.8em;">${new Date(race.endsAt).toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="race-my-stats" id="race-stats-${race.id}">
+                            <div class="race-my-stats-title">🎯 Your Performance</div>
+                            <div class="race-my-stats-grid">
+                                <div class="race-my-stat">
+                                    <div class="race-my-stat-label">Place</div>
+                                    <div class="race-my-stat-value">#${race.myPlace}</div>
+                                </div>
+                                <div class="race-my-stat">
+                                    <div class="race-my-stat-label">Wagered</div>
+                                    <div class="race-my-stat-value">${race.myWagered}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function connectToRace(race) {
+            // Disconnect if already connected
+            if (state.wsClients[race.id]) {
+                state.wsClients[race.id].disconnect();
+            }
+
+            try {
+                const wsUrl = state.serverUrl.replace('http://', 'ws://').replace('https://', 'wss://');
+                const wsClient = io(`${wsUrl}/race`, {
+                    transports: ['websocket'],
+                    reconnection: true,
+                    auth: {
+                        token: state.token
+                    }
+                });
+
+                wsClient.on('connect', () => {
+                    log(`✅ WS connected to ${race.name}`, 'success');
+                    updateWsStatus();
+                    
+                    // Subscribe to race
+                    wsClient.emit('race:subscribe', { raceId: race.id });
+                });
+
+                wsClient.on('disconnect', (reason) => {
+                    log(`⚠️ WS disconnected from ${race.name}: ${reason}`, 'error');
+                    updateWsStatus();
+                });
+
+                wsClient.on('connect_error', (error) => {
+                    log(`❌ WS connection error for ${race.name}: ${error.message}`, 'error');
+                });
+
+                wsClient.on('race:leaderboard:update', (data) => {
+                    log(`📊 ${race.name}: Live update received!`, 'success');
+                    // data.leaderboard is RaceLeaderboardDto which contains leaderboard array
+                    if (data.leaderboard && data.leaderboard.leaderboard) {
+                        updateRaceStats(race.id, data.leaderboard);
+                    }
+                });
+
+                wsClient.on('race:error', (error) => {
+                    log(`❌ Race WS error (${race.name}): ${error.message}`, 'error');
+                });
+
+                state.wsClients[race.id] = wsClient;
+            } catch (error) {
+                log(`❌ WS error for ${race.name}: ${error.message}`, 'error');
+            }
+        }
+
+        function updateWsStatus() {
+            const connectedCount = Object.values(state.wsClients).filter(c => c && c.connected).length;
+            const totalCount = Object.keys(state.wsClients).length;
+            
+            const statusEl = document.getElementById('wsStatus');
+            if (connectedCount === totalCount && connectedCount > 0) {
+                statusEl.textContent = `WS: Connected (${connectedCount}/${totalCount})`;
+                statusEl.className = 'status connected';
+            } else if (connectedCount === 0) {
+                statusEl.textContent = 'WS: Disconnected';
+                statusEl.className = 'status disconnected';
+            } else {
+                statusEl.textContent = `WS: Partial (${connectedCount}/${totalCount})`;
+                statusEl.className = 'status disconnected';
+            }
+        }
+
+        function updateRaceStats(raceId, leaderboardDto) {
+            const race = state.races.find(r => r.id === raceId);
+            if (!race) return;
+
+            // leaderboardDto is RaceLeaderboardDto { id, name, leaderboard: [...], ... }
+            const leaderboardArray = leaderboardDto.leaderboard || [];
+
+            // Find current user in leaderboard
+            const myEntry = leaderboardArray.find(e => e.user?.id === state.userId);
+            
+            if (myEntry) {
+                race.myPlace = myEntry.place || '-';
+                race.myWagered = myEntry.wagered || '0';
+                race.myPrize = myEntry.prize || '0';
+
+                // Update UI with pulsing animation
+                const statsDiv = document.getElementById(`race-stats-${raceId}`);
+                if (statsDiv) {
+                    statsDiv.innerHTML = `
+                        <div class="race-my-stats-title">🎯 Your Performance (Live 🔴)</div>
+                        <div class="race-my-stats-grid">
+                            <div class="race-my-stat">
+                                <div class="race-my-stat-label">Place</div>
+                                <div class="race-my-stat-value">#${race.myPlace}</div>
+                            </div>
+                            <div class="race-my-stat">
+                                <div class="race-my-stat-label">Wagered</div>
+                                <div class="race-my-stat-value">${race.myWagered}</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Flash animation
+                    statsDiv.style.animation = 'none';
+                    setTimeout(() => {
+                        statsDiv.style.animation = 'pulse 0.5s ease-in-out';
+                    }, 10);
+                }
+                
+                log(`🔄 Live update: ${race.name} - Place #${race.myPlace}, Wagered ${race.myWagered}`, 'success');
+            } else {
+                log(`ℹ️ ${race.name}: User not in top ${leaderboardArray.length} participants`, 'info');
+            }
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            Object.values(state.wsClients).forEach(client => {
+                if (client) client.disconnect();
+            });
+        });
+
+        // Initial log
+        log('🚀 Race Participation Tester ready', 'success');
+        log('📝 Enter credentials and click Login to start', 'info');
+    </script>
+</body>
+</html>

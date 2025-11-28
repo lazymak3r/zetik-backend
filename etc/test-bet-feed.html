@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bet Feed Test - Lucky Winners (25x+) & Zetiks ($1000+ wins)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #1a1a1a;
+            color: #fff;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .header h1 {
+            font-size: 20px;
+            margin: 5px 0;
+        }
+        .status {
+            padding: 5px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .connected {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .disconnected {
+            background-color: #f44336;
+            color: white;
+        }
+        .auth-form {
+            background-color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .controls {
+            margin: 10px 0;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .connect-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .disconnect-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        .subscribe-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+        .login-btn {
+            background-color: #FF9800;
+            color: white;
+        }
+        .bet-feed {
+            background-color: #2a2a2a;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .bet-feed h3 {
+            margin: 5px 0 10px 0;
+            font-size: 16px;
+        }
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #444;
+        }
+        .tab-button {
+            padding: 8px 16px;
+            border: none;
+            background-color: #444;
+            color: #fff;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .tab-button:hover {
+            background-color: #555;
+        }
+        .tab-button.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .bet-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+        .bet-table.updating {
+            opacity: 0.7;
+            transform: scale(0.99);
+        }
+        .bet-table.updated {
+            animation: pulse 0.6s ease-in-out;
+        }
+        @keyframes pulse {
+            0% { 
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+            }
+            50% { 
+                transform: scale(1.01);
+                box-shadow: 0 0 0 10px rgba(76, 175, 80, 0.1);
+            }
+            100% { 
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+            }
+        }
+        .bet-table th {
+            background-color: #333;
+            color: #fff;
+            padding: 8px 6px;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 2px solid #555;
+            position: relative;
+            font-size: 14px;
+        }
+        .bet-table td {
+            padding: 6px 6px;
+            border-bottom: 1px solid #444;
+            vertical-align: middle;
+            transition: all 0.3s ease;
+            font-size: 13px;
+        }
+        .bet-table tr:nth-child(even) {
+            background-color: #333;
+        }
+        .bet-table tr:nth-child(odd) {
+            background-color: #2a2a2a;
+        }
+        .bet-table tr:hover {
+            background-color: #404040;
+        }
+        .bet-table tr.new-row {
+            animation: fadeInUp 0.5s ease-out;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .update-indicator {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .update-indicator.show {
+            opacity: 1;
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .loading-dots {
+            display: inline-block;
+            position: relative;
+            width: 20px;
+            height: 20px;
+            margin-left: 10px;
+        }
+        .loading-dots div {
+            position: absolute;
+            top: 8px;
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            background: #4CAF50;
+            animation: loading-dots 1.2s linear infinite;
+        }
+        .loading-dots div:nth-child(1) { left: 2px; animation-delay: 0s; }
+        .loading-dots div:nth-child(2) { left: 8px; animation-delay: -0.4s; }
+        .loading-dots div:nth-child(3) { left: 14px; animation-delay: -0.8s; }
+        @keyframes loading-dots {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        .shimmer {
+            background: linear-gradient(90deg, 
+                rgba(255,255,255,0.1) 0%, 
+                rgba(255,255,255,0.2) 50%, 
+                rgba(255,255,255,0.1) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .game-name {
+            color: #FFD700;
+            font-weight: bold;
+        }
+        .user-name {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .user-hidden {
+            color: #999;
+            font-style: italic;
+        }
+        .bet-amount {
+            color: #2196F3;
+            font-weight: bold;
+        }
+        .bet-amount.high-roller {
+            color: #FF6B6B;
+            font-weight: bold;
+        }
+        .multiplier {
+            font-weight: bold;
+            color: #FF6B6B;
+        }
+        .multiplier.lucky {
+            color: #4CAF50;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+        }
+        .payout {
+            font-weight: bold;
+        }
+        .payout.positive {
+            color: #4CAF50;
+        }
+        .payout.negative {
+            color: #f44336;
+        }
+        .asset {
+            color: #FFA500;
+            font-weight: bold;
+        }
+        .bet-id {
+            color: #87CEEB;
+            font-family: monospace;
+            font-size: 10px;
+            word-break: break-all;
+            max-width: 200px;
+            line-height: 1.2;
+        }
+        .time {
+            color: #999;
+            font-size: 12px;
+        }
+        .no-bets {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px;
+        }
+        .logs {
+            background-color: #000;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .logs h3 {
+            margin: 5px 0 10px 0;
+            font-size: 16px;
+        }
+        .stats {
+            background-color: #333;
+            padding: 8px;
+            border-radius: 5px;
+            margin: 5px 0;
+            display: flex;
+            gap: 15px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .stat-label {
+            font-size: 10px;
+            color: #999;
+        }
+        .hidden {
+            display: none;
+        }
+        .lucky-winner-highlight {
+            background-color: rgba(76, 175, 80, 0.2);
+            border-left: 4px solid #4CAF50;
+        }
+        .zetik-highlight {
+            background-color: rgba(255, 107, 107, 0.2);
+            border-left: 4px solid #FF6B6B; /* Highlight big wins, not big bets */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎲 Bet Feed - Lucky Winners (25x+) & Zetiks ($1000+ wins)</h1>
+            <div id="status" class="status disconnected">Disconnected</div>
+        </div>
+
+        <div class="auth-form" id="auth-form">
+            <h3>🔑 Auto-Authenticating...</h3>
+            <p>Automatically logging in with test credentials...</p>
+            <div style="text-align: center; padding: 20px;">
+                <div class="loading-dots">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls hidden" id="controls">
+            <button class="connect-btn" onclick="connect()">Connect</button>
+            <button class="disconnect-btn" onclick="disconnect()">Disconnect</button>
+            <button class="subscribe-btn" id="subscribe-btn" onclick="subscribe()">📡 Subscribe</button>
+        </div>
+
+        <div class="stats hidden" id="stats">
+            <div class="stat-item">
+                <div id="totalBets" class="stat-value">0</div>
+                <div class="stat-label">Total Bets</div>
+            </div>
+            <div class="stat-item">
+                <div id="currentTab" class="stat-value">all-bets</div>
+                <div class="stat-label">Current Tab</div>
+            </div>
+            <div class="stat-item">
+                <div id="lastUpdate" class="stat-value">Never</div>
+                <div class="stat-label">Last Update</div>
+            </div>
+        </div>
+
+        <div class="bet-feed hidden" id="bet-feed">
+            <h3>🎲 Latest Bets (Updates every 10 seconds)
+                <span class="loading-dots" id="loading-indicator" style="display: none;">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </span>
+            </h3>
+            
+            <div class="tabs">
+                <button class="tab-button active" onclick="switchTab('all-bets')" id="tab-all-bets">
+                    📊 All Bets
+                </button>
+                <button class="tab-button" onclick="switchTab('lucky-winners')" id="tab-lucky-winners">
+                    🍀 Lucky Winners (25x+)
+                </button>
+                <button class="tab-button" onclick="switchTab('zetiks')" id="tab-zetiks">
+                    💎 Zetiks ($1000+ wins)
+                </button>
+            </div>
+            <div id="bet-list">
+                <table class="bet-table" id="bet-table">
+                    <thead>
+                        <tr>
+                            <th>Bet ID
+                                <span class="update-indicator" id="update-indicator">UPDATED</span>
+                            </th>
+                            <th>Game</th>
+                            <th>User</th>
+                            <th>Time</th>
+                            <th>Bet Amount</th>
+                            <th>Multiplier</th>
+                            <th>Payout</th>
+                            <th>Asset</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bet-table-body">
+                        <tr>
+                            <td colspan="8" class="no-bets">No bets yet...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="logs">
+            <h3>Connection Logs</h3>
+            <div id="logs"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        // Configuration
+        const API_BASE = 'http://localhost:3000/v1';
+        const WS_URL = 'http://localhost:3000';
+        
+        // Test credentials for automatic login
+        const TEST_CREDENTIALS = {
+            email: 'test@example.com',
+            password: 'TestPassword123'
+        };
+
+        let socket = null;
+        let isConnected = false;
+        let isSubscribed = false;
+        let authToken = null;
+        let user = null;
+        let currentTab = 'all-bets'; // Default tab
+
+        function log(message) {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            logs.innerHTML += `[${timestamp}] ${message}\n`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function updateStatus(status, className = 'disconnected') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = status;
+            statusEl.className = `status ${className}`;
+        }
+
+        function showAuthenticatedUI() {
+            document.getElementById('auth-form').classList.add('hidden');
+            document.getElementById('controls').classList.remove('hidden');
+            document.getElementById('stats').classList.remove('hidden');
+            document.getElementById('bet-feed').classList.remove('hidden');
+        }
+
+        function hideAuthenticatedUI() {
+            document.getElementById('auth-form').classList.remove('hidden');
+            document.getElementById('controls').classList.add('hidden');
+            document.getElementById('stats').classList.add('hidden');
+            document.getElementById('bet-feed').classList.add('hidden');
+        }
+
+        async function autoLogin() {
+            log('🔑 Auto-logging in with test credentials...');
+            updateStatus('Authenticating...', 'disconnected');
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login/email`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(TEST_CREDENTIALS),
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Login failed');
+                }
+
+                const data = await response.json();
+                authToken = data.accessToken;
+                user = data.user;
+
+                log(`✅ Auto-login successful! User: ${user.username || user.email}`);
+                updateStatus('Authenticated', 'connected');
+                showAuthenticatedUI();
+                
+                // Auto-connect after login
+                setTimeout(() => connect(), 500);
+
+            } catch (error) {
+                log(`❌ Auto-login failed: ${error.message}`);
+                log(`❌ Please ensure test user exists with email: ${TEST_CREDENTIALS.email}`);
+                updateStatus('Authentication Failed', 'disconnected');
+                
+                // Show manual login option
+                document.getElementById('auth-form').innerHTML = `
+                    <h3>❌ Auto-login Failed</h3>
+                    <p>Test user not found. Please ensure the test user is registered:</p>
+                    <p><strong>Email:</strong> ${TEST_CREDENTIALS.email}</p>
+                    <p><strong>Password:</strong> ${TEST_CREDENTIALS.password}</p>
+                    <button class="login-btn" onclick="location.reload()">🔄 Retry</button>
+                `;
+            }
+        }
+
+        function updateSubscribeButton() {
+            const subscribeBtn = document.getElementById('subscribe-btn');
+            if (isSubscribed) {
+                subscribeBtn.textContent = '🔕 Unsubscribe';
+                subscribeBtn.className = 'disconnect-btn';
+            } else {
+                subscribeBtn.textContent = '📡 Subscribe';
+                subscribeBtn.className = 'subscribe-btn';
+            }
+        }
+
+        function updateStats(bets, lastUpdate) {
+            const totalBets = bets.length;
+            
+            document.getElementById('totalBets').textContent = totalBets;
+            document.getElementById('currentTab').textContent = currentTab;
+            document.getElementById('lastUpdate').textContent = new Date(lastUpdate).toLocaleTimeString();
+        }
+
+        function connect() {
+            if (!authToken) {
+                log('❌ No auth token available. Please login first.');
+                return;
+            }
+
+            if (socket && socket.connected) {
+                log('Already connected');
+                return;
+            }
+
+            log(`🔄 Connecting to ${WS_URL}/bet-feed with auth token...`);
+
+            socket = io(`${WS_URL}/bet-feed`, {
+                auth: { token: authToken },
+                transports: ['websocket'],
+                withCredentials: true,
+            });
+
+            socket.on('connect', () => {
+                log('✅ Connected successfully');
+                isConnected = true;
+                updateStatus('Connected', 'connected');
+            });
+
+            socket.on('connected', (data) => {
+                log(`✅ Server acknowledged: ${data.message}`);
+                log(`👤 User ID: ${data.userId}`);
+            });
+
+            socket.on('disconnect', () => {
+                log('❌ Disconnected');
+                isConnected = false;
+                isSubscribed = false;
+                updateStatus('Disconnected', 'disconnected');
+                updateSubscribeButton();
+            });
+
+            socket.on('connect_error', (error) => {
+                log(`❌ Connection error: ${error.message}`);
+                updateStatus('Connection Failed', 'disconnected');
+            });
+
+            socket.on('error', (error) => {
+                log(`❌ Socket error: ${JSON.stringify(error)}`);
+            });
+
+            socket.on('subscribed', (data) => {
+                log(`📡 Subscribed: ${data.message}`);
+                isSubscribed = true;
+                updateSubscribeButton();
+                showUpdateAnimation();
+            });
+
+            socket.on('unsubscribed', (data) => {
+                log(`🚫 Unsubscribed: ${data.message}`);
+                isSubscribed = false;
+                updateSubscribeButton();
+            });
+
+            socket.on('bet-feed-update', (data) => {
+                const feedData = data.data;
+                log(`📊 Bet feed update for ${feedData.tab}: ${feedData.bets.length} bets`);
+                
+                // Log tab-specific information
+                if (feedData.tab === 'lucky-winners') {
+                    const luckyCount = feedData.bets.filter(bet => parseFloat(bet.multiplier) >= 25).length;
+                    log(`🍀 Lucky Winners: ${luckyCount} bets with 25x+ multiplier`);
+                } else if (feedData.tab === 'zetiks') {
+                    const bigWinners = feedData.bets.filter(bet => parseFloat(bet.payout) >= 0.01).length; // Big wins
+                    log(`💎 Zetiks: ${bigWinners} big wins detected ($1000+ USD)`);
+                }
+                
+                showUpdateAnimation();
+                renderBets(feedData.bets);
+                updateStats(feedData.bets, feedData.lastUpdate);
+            });
+
+            // Keep connection alive
+            setInterval(() => {
+                if (socket && socket.connected) {
+                    socket.emit('ping');
+                }
+            }, 30000);
+
+            socket.on('pong', (data) => {
+                log(`🏓 Pong received from server`);
+            });
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+                isConnected = false;
+                isSubscribed = false;
+                updateStatus('Disconnected', 'disconnected');
+                updateSubscribeButton();
+                log('👋 Disconnected manually');
+            }
+        }
+
+        function subscribe() {
+            if (!socket || !socket.connected) {
+                log('❌ Not connected');
+                return;
+            }
+
+            if (isSubscribed) {
+                socket.emit('unsubscribe');
+                log('🚫 Unsubscribing from bet feed...');
+            } else {
+                socket.emit('subscribe', { tab: currentTab });
+                log(`📡 Subscribing to bet feed for tab: ${currentTab}...`);
+                showUpdateAnimation();
+            }
+        }
+
+        function switchTab(tab) {
+            // Update UI
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            
+            // Update current tab
+            currentTab = tab;
+            log(`🔄 Switched to tab: ${tab}`);
+            
+            // Update statistics immediately
+            document.getElementById('currentTab').textContent = currentTab;
+            
+            // If connected and subscribed, request new data for this tab
+            if (socket && socket.connected && isSubscribed) {
+                socket.emit('switch-tab', { tab: currentTab });
+                log(`📡 Requesting data for tab: ${currentTab}`);
+                showUpdateAnimation();
+            }
+        }
+
+        function showUpdateAnimation() {
+            const table = document.getElementById('bet-table');
+            const indicator = document.getElementById('update-indicator');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            
+            // Show loading indicator
+            loadingIndicator.style.display = 'inline-block';
+            
+            // Add updating class to table
+            table.classList.add('updating');
+            
+            // Show update indicator
+            indicator.classList.add('show');
+            
+            // Hide indicators after animation
+            setTimeout(() => {
+                loadingIndicator.style.display = 'none';
+                table.classList.remove('updating');
+                table.classList.add('updated');
+                
+                // Remove updated class after animation
+                setTimeout(() => {
+                    table.classList.remove('updated');
+                }, 600);
+                
+                // Hide update indicator
+                setTimeout(() => {
+                    indicator.classList.remove('show');
+                }, 2000);
+            }, 800);
+        }
+
+        function renderBets(bets) {
+            const tableBody = document.getElementById('bet-table-body');
+            
+            if (!bets || bets.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="8" class="no-bets">No bets yet...</td></tr>';
+                return;
+            }
+
+            // Store current data to compare for new rows
+            const currentBets = Array.from(tableBody.querySelectorAll('tr:not(.no-bets)')).map(row => {
+                const cells = row.querySelectorAll('td');
+                return cells.length > 0 ? cells[0].textContent : '';
+            });
+
+            tableBody.innerHTML = '';
+
+            // Show only first 7 bets
+            const betsToShow = bets.slice(0, 7);
+            
+            betsToShow.forEach((bet, index) => {
+                const row = document.createElement('tr');
+                
+                // Check if this is a new bet (not in current data)
+                const isNewBet = !currentBets.includes(bet.betId);
+                if (isNewBet) {
+                    row.classList.add('new-row');
+                }
+
+                // Bet ID
+                const betIdCell = document.createElement('td');
+                const fullBetId = bet.betId || 'N/A';
+                betIdCell.innerHTML = `<span class="bet-id">${fullBetId}</span>`;
+                row.appendChild(betIdCell);
+
+                // Game name
+                const gameCell = document.createElement('td');
+                gameCell.innerHTML = `<span class="game-name">${bet.gameName}</span>`;
+                row.appendChild(gameCell);
+
+                // User name (userName || "Hidden")
+                const userCell = document.createElement('td');
+                if (bet.user && bet.user.userName) {
+                    userCell.innerHTML = `<span class="user-name">${bet.user.userName}</span>`;
+                } else {
+                    userCell.innerHTML = `<span class="user-hidden">Hidden</span>`;
+                }
+                row.appendChild(userCell);
+
+                // Time
+                const timeCell = document.createElement('td');
+                timeCell.innerHTML = `<span class="time">${new Date(bet.createdAt).toLocaleString()}</span>`;
+                row.appendChild(timeCell);
+
+                // Bet Amount
+                const amountCell = document.createElement('td');
+                const betAmount = parseFloat(bet.betAmount);
+                const isHighRoller = betAmount >= 1; // Highlight high value bets (could be Zetiks)
+                const amountClass = isHighRoller ? 'bet-amount high-roller' : 'bet-amount';
+                amountCell.innerHTML = `<span class="${amountClass}">${bet.betAmount}</span>`;
+                row.appendChild(amountCell);
+
+                // Multiplier
+                const multiplierCell = document.createElement('td');
+                const multiplier = parseFloat(bet.multiplier);
+                const isLucky = multiplier >= 25; // Restored original 25x threshold
+                const multiplierClass = isLucky ? 'multiplier lucky' : 'multiplier';
+                const multiplierText = isLucky ? `🍀 ${bet.multiplier}x` : `${bet.multiplier}x`;
+                multiplierCell.innerHTML = `<span class="${multiplierClass}">${multiplierText}</span>`;
+                row.appendChild(multiplierCell);
+
+                // Payout
+                const payoutCell = document.createElement('td');
+                const payoutValue = parseFloat(bet.payout);
+                const payoutClass = payoutValue >= 0 ? 'payout positive' : 'payout negative';
+                const payoutText = payoutValue > betAmount ? `💰 ${bet.payout}` : bet.payout;
+                payoutCell.innerHTML = `<span class="${payoutClass}">${payoutText}</span>`;
+                row.appendChild(payoutCell);
+
+                // Asset
+                const assetCell = document.createElement('td');
+                assetCell.innerHTML = `<span class="asset">${bet.asset}</span>`;
+                row.appendChild(assetCell);
+
+                // Add special styling for different tab types
+                if (currentTab === 'lucky-winners' && isLucky) {
+                    row.classList.add('lucky-winner-highlight');
+                } else if (currentTab === 'zetiks' && payoutValue > betAmount) {
+                    row.classList.add('zetik-highlight'); // Highlight winners, not big bets
+                }
+
+                tableBody.appendChild(row);
+            });
+
+            // Fill remaining rows with empty cells if less than 7 bets
+            while (tableBody.children.length < 7) {
+                const emptyRow = document.createElement('tr');
+                for (let i = 0; i < 8; i++) {
+                    const emptyCell = document.createElement('td');
+                    emptyCell.innerHTML = '&nbsp;';
+                    emptyRow.appendChild(emptyCell);
+                }
+                tableBody.appendChild(emptyRow);
+            }
+
+            // Add shimmer effect to cells randomly for visual interest
+            setTimeout(() => {
+                const cells = tableBody.querySelectorAll('td');
+                const randomCells = Array.from(cells).filter(() => Math.random() > 0.8);
+                randomCells.forEach(cell => {
+                    cell.classList.add('shimmer');
+                    setTimeout(() => {
+                        cell.classList.remove('shimmer');
+                    }, 1500);
+                });
+            }, 500);
+        }
+
+        // Page initialization
+        window.onload = function() {
+            log('🚀 Page loaded. Starting auto-authentication...');
+            log('📋 Available tabs:');
+            log('  📊 All Bets - Shows all recent bets (wins and losses)');
+            log('  🍀 Lucky Winners - Shows bets with 25x+ multiplier');
+            log('  💎 Zetiks - Shows bets with $1000+ USD wins');
+            updateSubscribeButton();
+            hideAuthenticatedUI();
+            
+            // Start auto-login process
+            setTimeout(() => autoLogin(), 1000);
+        };
+    </script>
+</body>
+</html> 

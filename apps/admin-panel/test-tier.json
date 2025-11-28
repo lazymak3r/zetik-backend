@@ -1,0 +1,12 @@
+{
+  "level": 4,
+  "name": "Test Tier",
+  "description": "Test",
+  "isForVip": true,
+  "wagerRequirement": "500000",
+  "levelUpBonusAmount": "20000",
+  "rakebackPercentage": "2.0",
+  "rankUpBonusAmount": "0",
+  "weeklyBonusPercentage": "0.8",
+  "monthlyBonusPercentage": "1.2"
+}

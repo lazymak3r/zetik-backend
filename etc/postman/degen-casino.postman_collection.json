@@ -1,0 +1,1460 @@
+{
+  "info": {
+    "_postman_id": "2a99fa25-5e5c-4b1b-acbf-3e73f97e1212",
+    "name": "Zetik Casino API",
+    "description": "Collection for testing authentication and user profile",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "12345678"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register by Email",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('randomUsername', 'testuser' + Math.floor(Math.random() * 1000000));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has access token\", function () {",
+                  "    pm.expect(jsonData.accessToken).to.be.a('string');",
+                  "    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has refresh token\", function () {",
+                  "    pm.expect(jsonData.refreshToken).to.be.a('string');",
+                  "    pm.collectionVariables.set('refreshToken', jsonData.refreshToken);",
+                  "});",
+                  "",
+                  "// Check cookie received",
+                  "pm.test(\"Access token cookie is set\", function () {",
+                  "    pm.expect(pm.cookies.has('access_token')).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test(\"Refresh token cookie is set\", function () {",
+                  "    pm.expect(pm.cookies.has('refresh_token')).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"username\": \"{{randomUsername}}\",\n    \"password\": \"TestPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/auth/register/email",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "auth", "register", "email"]
+            },
+            "description": "Register a new user"
+          },
+          "response": []
+        },
+        {
+          "name": "Login by Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has access token\", function () {",
+                  "    pm.expect(jsonData.accessToken).to.be.a('string');",
+                  "    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has refresh token\", function () {",
+                  "    pm.expect(jsonData.refreshToken).to.be.a('string');",
+                  "    pm.collectionVariables.set('refreshToken', jsonData.refreshToken);",
+                  "});",
+                  "",
+                  "// Check cookie received",
+                  "pm.test(\"Access token cookie is set\", function () {",
+                  "    pm.expect(pm.cookies.has('access_token')).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test(\"Refresh token cookie is set\", function () {",
+                  "    pm.expect(pm.cookies.has('refresh_token')).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"TestPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/auth/login/email",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "auth", "login", "email"]
+            },
+            "description": "Authenticate an existing user"
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has new access token\", function () {",
+                  "    pm.expect(jsonData.accessToken).to.be.a('string');",
+                  "    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has new refresh token\", function () {",
+                  "    pm.expect(jsonData.refreshToken).to.be.a('string');",
+                  "    pm.collectionVariables.set('refreshToken', jsonData.refreshToken);",
+                  "});",
+                  "",
+                  "// Check cookie received",
+                  "pm.test(\"Access token cookie is updated\", function () {",
+                  "    pm.expect(pm.cookies.has('access_token')).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test(\"Refresh token cookie is updated\", function () {",
+                  "    pm.expect(pm.cookies.has('refresh_token')).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "auth", "refresh"]
+            },
+            "description": "Refresh authentication tokens"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Access token cookie is cleared\", function () {",
+                  "    const accessTokenCookie = pm.cookies.get('access_token');",
+                  "    pm.expect(!accessTokenCookie || accessTokenCookie === '').to.be.true;",
+                  "});",
+                  "",
+                  "pm.test(\"Refresh token cookie is cleared\", function () {",
+                  "    const refreshTokenCookie = pm.cookies.get('refresh_token');",
+                  "    pm.expect(!refreshTokenCookie || refreshTokenCookie === '').to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "auth", "logout"]
+            },
+            "description": "Log out the current user"
+          },
+          "response": []
+        },
+        {
+          "name": "Request Email Verification",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/auth/verify-email/request",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "auth", "verify-email", "request"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Email",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/auth/verify-email?token={{verificationToken}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "auth", "verify-email"],
+              "query": [{ "key": "token", "value": "{{verificationToken}}" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Request Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/auth/password-reset/request",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "auth", "password-reset", "request"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{resetToken}}\",\n  \"newPassword\": \"NewPass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/auth/password-reset",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "auth", "password-reset"]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Requests for testing authentication"
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Get Deposit Address",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Response has address\", function () {",
+                  "    pm.expect(jsonData.address).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test(\"Response has QR code\", function () {",
+                  "    pm.expect(jsonData.qrCode).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/payments/deposit-address?asset=BTC",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "payments", "deposit-address"],
+              "query": [
+                {
+                  "key": "asset",
+                  "value": "BTC"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Withdraw Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Response has requestId\", function () {",
+                  "    pm.expect(jsonData.requestId).to.be.a('string');",
+                  "    pm.collectionVariables.set('withdrawRequestId', jsonData.requestId);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has status\", function () {",
+                  "    pm.expect(jsonData.status).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/payments/withdraw-requests",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "payments", "withdraw-requests"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"requestId\": \"{{$guid}}\",\n    \"asset\": \"BTC\",\n    \"amount\": \"0.00001\",\n    \"toAddress\": \"bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Wallets",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Response is an array\", function () {",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});",
+                  "",
+                  "if (jsonData.length > 0) {",
+                  "    pm.test(\"Wallet has required fields\", function () {",
+                  "        const wallet = jsonData[0];",
+                  "        pm.expect(wallet).to.have.property('id');",
+                  "        pm.expect(wallet).to.have.property('asset');",
+                  "        pm.expect(wallet).to.have.property('balance');",
+                  "        pm.expect(wallet).to.have.property('address');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/payments/wallets",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "payments", "wallets"]
+            }
+          }
+        }
+      ],
+      "description": "Requests for payment operations"
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has user ID\", function () {",
+                  "    pm.expect(jsonData.id).to.be.a('number');",
+                  "});",
+                  "",
+                  "pm.test(\"Response has username\", function () {",
+                  "    pm.expect(jsonData.username).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/users/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "users", "profile"]
+            },
+            "description": "Get the current user's profile"
+          },
+          "response": []
+        }
+      ],
+      "description": "Requests for user operations"
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Setup Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"username\": \"superadmin\", \"password\": \"qwert123\" }"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/setup-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "admin", "setup-password"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "console.log('Admin login response:', jsonData);",
+                  "",
+                  "pm.test(\"Response has access token\", function () {",
+                  "    pm.expect(jsonData.accessToken).to.be.a('string');",
+                  "    pm.collectionVariables.set('adminAccessToken', jsonData.accessToken);",
+                  "    console.log('Admin access token saved:', jsonData.accessToken);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has refresh token\", function () {",
+                  "    pm.expect(jsonData.refreshToken).to.be.a('string');",
+                  "    pm.collectionVariables.set('adminRefreshToken', jsonData.refreshToken);",
+                  "    console.log('Admin refresh token saved:', jsonData.refreshToken);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"superadmin\",\n    \"password\": \"qwert123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "admin", "login"]
+            },
+            "description": "Login as admin"
+          }
+        },
+        {
+          "name": "Refresh Tokens",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('adminAccessToken', json.accessToken);",
+                  "pm.collectionVariables.set('adminRefreshToken', json.refreshToken);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"refreshToken\": \"{{adminRefreshToken}}\" }"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "admin", "refresh"]
+            }
+          }
+        }
+      ],
+      "description": "Requests for admin operations"
+    },
+    {
+      "name": "Admin Payments",
+      "item": [
+        {
+          "name": "Get Withdraw Requests",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "console.log('All collection variables:', pm.collectionVariables.toObject());",
+                  "console.log('Admin token:', pm.collectionVariables.get('adminAccessToken'));",
+                  "console.log('User token:', pm.collectionVariables.get('accessToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('Response status:', pm.response.code);",
+                  "console.log('Response body:', pm.response.text());",
+                  "",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Response has data array\", function () {",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test(\"Response has total count\", function () {",
+                  "    pm.expect(jsonData.total).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/payments/withdraw-requests",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "admin", "payments", "withdraw-requests"]
+            },
+            "description": "Get list of withdrawal requests (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Withdraw Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Response has requestId\", function () {",
+                  "    pm.expect(jsonData.requestId).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test(\"Response has APPROVED status\", function () {",
+                  "    pm.expect(jsonData.status).to.equal('APPROVED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/payments/withdraw-requests/{{withdrawRequestId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "v1",
+                "admin",
+                "payments",
+                "withdraw-requests",
+                "{{withdrawRequestId}}",
+                "approve"
+              ]
+            },
+            "description": "Approve a withdrawal request (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Reject Withdraw Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Response has requestId\", function () {",
+                  "    pm.expect(jsonData.requestId).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test(\"Response has REJECTED status\", function () {",
+                  "    pm.expect(jsonData.status).to.equal('REJECTED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminAccessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/payments/withdraw-requests/{{withdrawRequestId}}/reject",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "v1",
+                "admin",
+                "payments",
+                "withdraw-requests",
+                "{{withdrawRequestId}}",
+                "reject"
+              ]
+            },
+            "description": "Reject a withdrawal request (admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Fireblocks Webhook",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/payments/fireblocks-webhook",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "admin", "payments", "fireblocks-webhook"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Games",
+      "item": [
+        {
+          "name": "Mines",
+          "item": [
+            {
+              "name": "Start Game",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 201\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "var jsonData = pm.response.json();",
+                      "pm.test(\"Response has game ID\", function () {",
+                      "    pm.expect(jsonData.id).to.be.a('string');",
+                      "    pm.collectionVariables.set('minesGameId', jsonData.id);",
+                      "});",
+                      "",
+                      "pm.test(\"Response has correct bet amount\", function () {",
+                      "    pm.expect(jsonData.betAmount).to.equal('0.00001');",
+                      "});",
+                      "",
+                      "pm.test(\"Game status is ACTIVE\", function () {",
+                      "    pm.expect(jsonData.status).to.equal('ACTIVE');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"betAmount\": 0.00001,\n    \"minesCount\": 3,\n    \"gameSessionId\": \"{{$guid}}\",\n    \"clientSeed\": \"test-seed-{{$randomAlphaNumeric}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/games/mines/start",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "games", "mines", "start"]
+                },
+                "description": "Start a new mines game"
+              },
+              "response": []
+            },
+            {
+              "name": "Reveal Tile",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "var jsonData = pm.response.json();",
+                      "pm.test(\"Response has game ID\", function () {",
+                      "    pm.expect(jsonData.id).to.be.a('string');",
+                      "});",
+                      "",
+                      "pm.test(\"Tile was revealed\", function () {",
+                      "    pm.expect(jsonData.revealedTiles).to.be.an('array');",
+                      "    pm.expect(jsonData.revealedTiles.length).to.be.greaterThan(0);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"gameId\": \"{{minesGameId}}\",\n    \"tilePosition\": 0\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/games/mines/reveal",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "games", "mines", "reveal"]
+                },
+                "description": "Reveal a tile in the mines game"
+              },
+              "response": []
+            },
+            {
+              "name": "Cashout",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "var jsonData = pm.response.json();",
+                      "pm.test(\"Game status is COMPLETED\", function () {",
+                      "    pm.expect(jsonData.status).to.equal('COMPLETED');",
+                      "});",
+                      "",
+                      "pm.test(\"Final payout is set\", function () {",
+                      "    pm.expect(jsonData.finalPayout).to.be.a('string');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"gameId\": \"{{minesGameId}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/games/mines/cashout",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "games", "mines", "cashout"]
+                },
+                "description": "Cash out from the mines game"
+              },
+              "response": []
+            },
+            {
+              "name": "Autoplay",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Generate a random game session ID",
+                      "pm.collectionVariables.set('autoplayGameSessionId', pm.variables.replaceIn('{{$guid}}'));"
+                    ],
+                    "type": "text/javascript"
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 201\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "var jsonData = pm.response.json();",
+                      "pm.test(\"Response has game ID\", function () {",
+                      "    pm.expect(jsonData.id).to.be.a('string');",
+                      "});",
+                      "",
+                      "pm.test(\"Game has final status\", function () {",
+                      "    pm.expect(['COMPLETED', 'BUSTED']).to.include(jsonData.status);",
+                      "});",
+                      "",
+                      "pm.test(\"Response has correct bet amount\", function () {",
+                      "    pm.expect(jsonData.betAmount).to.equal('0.001');",
+                      "});",
+                      "",
+                      "pm.test(\"Response has mines count\", function () {",
+                      "    pm.expect(jsonData.minesCount).to.equal(3);",
+                      "});",
+                      "",
+                      "pm.test(\"Response has revealed tiles\", function () {",
+                      "    pm.expect(jsonData.revealedTiles).to.be.an('array');",
+                      "});",
+                      "",
+                      "if (jsonData.status === 'COMPLETED') {",
+                      "    pm.test(\"Completed game has final payout\", function () {",
+                      "        pm.expect(jsonData.finalPayout).to.be.a('string');",
+                      "        pm.expect(parseFloat(jsonData.finalPayout)).to.be.greaterThan(0);",
+                      "    });",
+                      "} else if (jsonData.status === 'BUSTED') {",
+                      "    pm.test(\"Busted game has zero payout\", function () {",
+                      "        pm.expect(jsonData.finalPayout).to.equal('0');",
+                      "    });",
+                      "}",
+                      "",
+                      "console.log('Autoplay result:', {",
+                      "    gameId: jsonData.id,",
+                      "    status: jsonData.status,",
+                      "    finalPayout: jsonData.finalPayout,",
+                      "    revealedTiles: jsonData.revealedTiles",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"betAmount\": 0.001,\n    \"minesCount\": 3,\n    \"tilePositions\": [0, 1, 5, 6, 10],\n    \"gameSessionId\": \"{{autoplayGameSessionId}}\",\n    \"clientSeed\": \"autoplay-seed-{{$randomAlphaNumeric}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/games/mines/autoplay",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "games", "mines", "autoplay"]
+                },
+                "description": "Play mines game automatically - start, reveal tiles, and cashout in one request"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Active Game",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData) {",
+                      "    pm.test(\"Active game has ID\", function () {",
+                      "        pm.expect(jsonData.id).to.be.a('string');",
+                      "    });",
+                      "    pm.test(\"Active game status is ACTIVE\", function () {",
+                      "        pm.expect(jsonData.status).to.equal('ACTIVE');",
+                      "    });",
+                      "} else {",
+                      "    pm.test(\"No active game\", function () {",
+                      "        pm.expect(jsonData).to.be.null;",
+                      "    });",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/v1/games/mines/active",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "games", "mines", "active"]
+                },
+                "description": "Get the current active mines game"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Game History",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "var jsonData = pm.response.json();",
+                      "pm.test(\"Response is an array\", function () {",
+                      "    pm.expect(jsonData).to.be.an('array');",
+                      "});",
+                      "",
+                      "if (jsonData.length > 0) {",
+                      "    pm.test(\"Game has required fields\", function () {",
+                      "        const game = jsonData[0];",
+                      "        pm.expect(game).to.have.property('id');",
+                      "        pm.expect(game).to.have.property('betAmount');",
+                      "        pm.expect(game).to.have.property('minesCount');",
+                      "        pm.expect(game).to.have.property('status');",
+                      "        pm.expect(game).to.have.property('createdAt');",
+                      "    });",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/v1/games/mines/history?limit=10",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "games", "mines", "history"],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "Get mines game history"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Game Details",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "var jsonData = pm.response.json();",
+                      "pm.test(\"Response has game ID\", function () {",
+                      "    pm.expect(jsonData.id).to.be.a('string');",
+                      "});",
+                      "",
+                      "pm.test(\"Response has required fields\", function () {",
+                      "    pm.expect(jsonData).to.have.property('betAmount');",
+                      "    pm.expect(jsonData).to.have.property('minesCount');",
+                      "    pm.expect(jsonData).to.have.property('status');",
+                      "    pm.expect(jsonData).to.have.property('createdAt');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/v1/games/mines/details/{{minesGameId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["v1", "games", "mines", "details", "{{minesGameId}}"]
+                },
+                "description": "Get detailed information about a specific mines game"
+              },
+              "response": []
+            }
+          ],
+          "description": "Mines game endpoints"
+        }
+      ],
+      "description": "Game-related endpoints"
+    },
+    {
+      "name": "Bonus",
+      "item": [
+        {
+          "name": "Get Pending Bonuses",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/bonus/pending?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "bonus", "pending"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Claim Bonus",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Response has id\", function () {",
+                  "    pm.expect(jsonData.id).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/v1/bonus/claim/{{bonusId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "bonus", "claim", "{{bonusId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get VIP Tiers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Response is an array\", function () {",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});",
+                  "if (jsonData.length > 0) {",
+                  "    pm.test(\"First item has id, level, name\", function () {",
+                  "        pm.expect(jsonData[0]).to.have.property('id');",
+                  "        pm.expect(jsonData[0]).to.have.property('level');",
+                  "        pm.expect(jsonData[0]).to.have.property('name');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/bonus/vip-tiers",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "bonus", "vip-tiers"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Bet Confirmed",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Success is true\", function () {",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userId\": 1,\n    \"bets\": \"100.00\",\n    \"refunds\": \"10.00\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/bonus/test/bet-confirmed",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "bonus", "test", "bet-confirmed"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get VIP Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Response has userId\", function () {",
+                  "    pm.expect(jsonData.userId).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/bonus/vip-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "bonus", "vip-status"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "depositId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "assetType",
+      "value": "BTC",
+      "type": "string"
+    },
+    {
+      "key": "adminAccessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminRefreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "minesGameId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "autoplayGameSessionId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
