@@ -5,8 +5,6 @@ import { PasswordUtil } from '@zetik/common';
 import { MailTokenEntity, UserEntity } from '@zetik/shared-entities';
 import { randomUUID } from 'crypto';
 import { Repository } from 'typeorm';
-import { EmailTemplateEnum } from '../../email/email-templates.enum';
-import { MailgunService } from '../../email/mailgun.service';
 import { MailTokenTypeEnum } from '../enums/mail-token-type.enum';
 
 @Injectable()
@@ -15,7 +13,6 @@ export class PasswordResetService {
     @InjectRepository(MailTokenEntity)
     private readonly tokenRepo: Repository<MailTokenEntity>,
     private readonly configService: ConfigService,
-    private readonly mailgunService: MailgunService,
   ) {}
 
   async createAndSend(user: UserEntity): Promise<void> {
@@ -36,10 +33,12 @@ export class PasswordResetService {
     const resetLink = `${frontendUrl}/?modal=reset-password&token=${token}`;
 
     // Send email using central MailgunService
-    await this.mailgunService.sendTemplateEmail(user.email!, EmailTemplateEnum.PASSWORD_RESET, {
-      username: user.username,
-      resetLink,
-    });
+    // ⚠️ DISABLED: Email sending temporarily disabled for development
+    // await this.mailgunService.sendTemplateEmail(user.email!, EmailTemplateEnum.PASSWORD_RESET, {
+    //   username: user.username,
+    //   resetLink,
+    // });
+    console.log(`[DISABLED] Password reset link: ${resetLink}`);
   }
 
   async reset(token: string, newPassword: string): Promise<void> {

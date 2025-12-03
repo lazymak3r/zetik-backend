@@ -4,8 +4,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { MailTokenEntity, UserEntity } from '@zetik/shared-entities';
 import { randomUUID } from 'crypto';
 import { Repository } from 'typeorm';
-import { EmailTemplateEnum } from '../../email/email-templates.enum';
-import { MailgunService } from '../../email/mailgun.service';
 import { MailTokenTypeEnum } from '../enums/mail-token-type.enum';
 
 @Injectable()
@@ -14,7 +12,6 @@ export class EmailVerificationService {
     @InjectRepository(MailTokenEntity)
     private readonly tokenRepo: Repository<MailTokenEntity>,
     private readonly configService: ConfigService,
-    private readonly mailgunService: MailgunService,
   ) {}
 
   async createAndSend(user: UserEntity): Promise<void> {
@@ -35,10 +32,12 @@ export class EmailVerificationService {
     const verificationLink = `${frontendUrl}/account/profile?token=${token}`;
 
     // Send email using central MailgunService
-    await this.mailgunService.sendTemplateEmail(user.email!, EmailTemplateEnum.EMAIL_VERIFICATION, {
-      username: user.username,
-      verificationLink,
-    });
+    // ⚠️ DISABLED: Email sending temporarily disabled for development
+    // await this.mailgunService.sendTemplateEmail(user.email!, EmailTemplateEnum.EMAIL_VERIFICATION, {
+    //   username: user.username,
+    //   verificationLink,
+    // });
+    console.log(`[DISABLED] Email verification link: ${verificationLink}`);
   }
 
   async verify(token: string): Promise<void> {

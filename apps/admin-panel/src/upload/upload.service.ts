@@ -37,8 +37,18 @@ export class UploadService {
   private async ensureBucket() {
     try {
       await this.s3.send(new HeadBucketCommand({ Bucket: this.bucket }));
-    } catch {
-      await this.s3.send(new CreateBucketCommand({ Bucket: this.bucket }));
+    } catch (error: any) {
+      // If Access Denied, bucket exists but we don't have HeadBucket permission
+      if (error?.name === 'AccessDenied' || error?.$metadata?.httpStatusCode === 403) {
+        console.warn(`Bucket "${this.bucket}" exists but HeadBucket permission denied. Continuing...`);
+        return;
+      }
+      // If bucket doesn't exist, try to create it
+      try {
+        await this.s3.send(new CreateBucketCommand({ Bucket: this.bucket }));
+      } catch (createError: any) {
+        console.warn(`Could not create bucket "${this.bucket}":`, createError.message);
+      }
     }
   }
 

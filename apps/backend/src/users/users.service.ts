@@ -25,7 +25,6 @@ import {
 } from '@zetik/shared-entities';
 import { randomUUID } from 'crypto';
 import { DataSource, EntityManager, In, QueryFailedError, Repository } from 'typeorm';
-import { EmailVerificationService } from '../auth/services/email-verification.service';
 import { BalanceService } from '../balance/balance.service';
 import { UserVipStatusService } from '../bonus/services/user-vip-status.service';
 import { VipTierService } from '../bonus/services/vip-tier.service';
@@ -80,8 +79,6 @@ export class UsersService {
     private readonly uploadService: UploadService,
     private readonly userCacheService: UserCacheService,
     private readonly dataSource: DataSource,
-    @Inject(forwardRef(() => EmailVerificationService))
-    private readonly emailVerificationService: EmailVerificationService,
     private readonly userRoleService: UserRoleService,
     private readonly userPrivacyEventPublisher: UserPrivacyEventPublisher,
   ) {}
@@ -677,18 +674,22 @@ export class UsersService {
     const updatedUser = await this.usersRepository.save(user);
 
     // Send verification email if email was added
+    // ⚠️ DISABLED: Email sending temporarily disabled for development
+    // if (updateDto.email !== undefined && updatedUser.email) {
+    //   try {
+    //     await this.emailVerificationService.createAndSend(updatedUser);
+    //     this.logger.log(`Verification email sent to ${updatedUser.email}`);
+    //   } catch (error) {
+    //     this.logger.error(
+    //       `Failed to send verification email to ${updatedUser.email}:`,
+    //       error instanceof Error ? error.message : String(error),
+    //     );
+    //     // Don't fail the entire request if email sending fails
+    //     // User can request a new verification email later
+    //   }
+    // }
     if (updateDto.email !== undefined && updatedUser.email) {
-      try {
-        await this.emailVerificationService.createAndSend(updatedUser);
-        this.logger.log(`Verification email sent to ${updatedUser.email}`);
-      } catch (error) {
-        this.logger.error(
-          `Failed to send verification email to ${updatedUser.email}:`,
-          error instanceof Error ? error.message : String(error),
-        );
-        // Don't fail the entire request if email sending fails
-        // User can request a new verification email later
-      }
+      this.logger.log(`[DISABLED] Email verification disabled for: ${updatedUser.email}`);
     }
 
     // Invalidate user cache to ensure fresh data on next authentication
