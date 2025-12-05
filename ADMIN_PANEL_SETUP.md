@@ -68,7 +68,7 @@ ADMIN_JWT_REFRESH_EXPIRATION=7d
 
 # Default Admin Credentials
 DEFAULT_ADMIN_EMAIL=admin@zetik.casino
-DEFAULT_ADMIN_PASSWORD=changeme123
+DEFAULT_ADMIN_PASSWORD=changeme1234
 DEFAULT_ADMIN_NAME=Administrator
 
 # Session Configuration
