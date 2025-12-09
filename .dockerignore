@@ -36,4 +36,7 @@ scripts/
 *.env.local
 *.env.development
 *.env.test
-*.env.production 
+*.env.production
+
+# Frontend (deploy separately to Vercel)
+frontend/ 

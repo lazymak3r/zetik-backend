@@ -11,8 +11,12 @@ COPY . .
 # Install all dependencies (including workspaces)
 RUN pnpm install --frozen-lockfile
 
-# Build backend application
-RUN pnpm build:backend
+# Build shared libraries first
+RUN pnpm --filter @zetik/common build
+RUN pnpm --filter @zetik/shared-entities build
+
+# Build backend application only (no frontend)
+RUN pnpm --filter @zetik/backend build
 
 # Production stage
 FROM node:24-alpine AS production
