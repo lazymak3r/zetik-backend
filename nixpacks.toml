@@ -1,0 +1,12 @@
+# Force Railway to use Dockerfile only
+[phases.setup]
+nixPkgs = []
+
+[phases.install]
+cmds = []
+
+[phases.build]
+cmds = []
+
+[start]
+cmd = ""

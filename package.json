@@ -10,7 +10,7 @@
   },
   "scripts": {
     "watch": "turbo watch build -F @zetik/common -F @zetik/shared-entities",
-    "build": "turbo build",
+    "build": "turbo build --filter='!frontend/*'",
     "build:backend": "turbo build -F @zetik/backend",
     "build:admin": "turbo build -F @zetik/admin-panel",
     "build:crash": "turbo build -F @zetik/crash-service",
