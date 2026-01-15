@@ -76,12 +76,20 @@ export class RedisIoAdapter extends IoAdapter {
   async close(): Promise<void> {
     this.logger.log('Closing Redis WebSocket adapter connections...');
 
-    if (this.pubClient) {
-      await this.pubClient.quit();
+    try {
+      if (this.pubClient?.isOpen) {
+        await this.pubClient.quit();
+      }
+    } catch (error) {
+      this.logger.warn('Error closing pub client:', error);
     }
 
-    if (this.subClient) {
-      await this.subClient.quit();
+    try {
+      if (this.subClient?.isOpen) {
+        await this.subClient.quit();
+      }
+    } catch (error) {
+      this.logger.warn('Error closing sub client:', error);
     }
 
     this.logger.log('Redis WebSocket adapter connections closed');
